@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Humanoid Robot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script defer src="script.js"></script>
+</head>
+<body class="bg-gray-900 text-gray-200">
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+        <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+        <nav>
+            <ul class="flex space-x-4">
+                <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main class="p-6 mt-16 grid grid-cols-1 gap-6">
+        <div class="bg-gray-800 p-6 rounded shadow-lg w-full">
+            <h2 class="text-lg font-semibold">⚙️ General Settings</h2>
+            <p class="text-gray-400 mt-2">Modify general system settings.</p>
+            <label class="block mt-4">Language:
+                <select class="w-full p-2 rounded bg-gray-900 text-white">
+                    <option>English</option>
+                    <option>Spanish</option>
+                    <option>French</option>
+                </select>
+            </label>
+            <label class="block mt-4">Theme:
+                <select class="w-full p-2 rounded bg-gray-900 text-white">
+                    <option>Dark</option>
+                    <option>Light</option>
+                </select>
+            </label>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded shadow-lg w-full">
+            <h2 class="text-lg font-semibold">🔧 Robot Settings</h2>
+            <p class="text-gray-400 mt-2">Configure the humanoid robot’s operational parameters.</p>
+            <label class="block mt-4">Speed:
+                <input type="range" min="1" max="10" value="5" class="w-full">
+            </label>
+            <label class="block mt-4">Power Mode:
+                <select class="w-full p-2 rounded bg-gray-900 text-white">
+                    <option>Eco</option>
+                    <option>Performance</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded shadow-lg w-full">
+            <h2 class="text-lg font-semibold">🔒 Security Settings</h2>
+            <p class="text-gray-400 mt-2">Manage user access and system security.</p>
+            <button class="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Reset Password</button>
+            <button class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Enable Two-Factor Authentication</button>
+        </div>
+    </main>
+</body>
+</html>

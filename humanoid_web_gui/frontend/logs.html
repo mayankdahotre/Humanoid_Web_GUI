@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs - Humanoid Robot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script defer src="script.js"></script>
+</head>
+<body class="bg-gray-900 text-gray-200">
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+        <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+        <nav>
+            <ul class="flex space-x-4">
+                <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main class="p-6 mt-16 grid grid-cols-1 gap-6">
+        <div class="bg-gray-800 p-6 rounded shadow-lg w-full">
+            <h2 class="text-lg font-semibold">📜 System Logs</h2>
+            <p class="text-gray-400 mt-2">Real-time logs from the humanoid robot’s operations.</p>
+            <textarea class="w-full h-40 bg-gray-900 p-2 rounded mt-2 text-green-400" readonly>System Log Entries...</textarea>
+            <button class="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Download Logs</button>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded shadow-lg w-full">
+            <h2 class="text-lg font-semibold">⚠️ Error Logs</h2>
+            <p class="text-gray-400 mt-2">List of recent errors encountered by the robot.</p>
+            <textarea class="w-full h-40 bg-gray-900 p-2 rounded mt-2 text-red-400" readonly>Error Log Entries...</textarea>
+            <button class="mt-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Clear Errors</button>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded shadow-lg w-full">
+            <h2 class="text-lg font-semibold">👤 User Activity Logs</h2>
+            <p class="text-gray-400 mt-2">Track actions performed by users on the system.</p>
+            <textarea class="w-full h-40 bg-gray-900 p-2 rounded mt-2 text-yellow-400" readonly>User Activity Log Entries...</textarea>
+            <button class="mt-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Export Activity</button>
+        </div>
+    </main>
+</body>
+</html>

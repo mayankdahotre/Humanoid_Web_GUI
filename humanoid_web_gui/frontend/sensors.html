@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensors - Humanoid Robot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script defer src="script.js"></script>
+</head>
+<body class="bg-gray-900 text-gray-200">
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+        <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+        <nav>
+            <ul class="flex space-x-4">
+                <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main class="p-6 mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-gray-800 p-6 rounded shadow-lg col-span-1 md:col-span-2 lg:col-span-3">
+            <h2 class="text-lg font-semibold">📡 Real-Time Sensor Data</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Temperature:</p>
+                    <p class="text-green-400 text-xl font-bold">36°C</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Humidity:</p>
+                    <p class="text-green-400 text-xl font-bold">45%</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Battery Level:</p>
+                    <p class="text-yellow-400 text-xl font-bold">78%</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">CPU Usage:</p>
+                    <p class="text-red-400 text-xl font-bold">62%</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded shadow-lg col-span-1 md:col-span-2 lg:col-span-3">
+            <h2 class="text-lg font-semibold">📊 Environmental Readings</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Air Quality:</p>
+                    <p class="text-green-400 text-xl font-bold">Good</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">CO2 Levels:</p>
+                    <p class="text-yellow-400 text-xl font-bold">Moderate</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Sound Levels:</p>
+                    <p class="text-red-400 text-xl font-bold">High</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Light Intensity:</p>
+                    <p class="text-blue-400 text-xl font-bold">Medium</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded shadow-lg col-span-1 md:col-span-2 lg:col-span-3">
+            <h2 class="text-lg font-semibold">🚀 Performance Metrics</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Response Time:</p>
+                    <p class="text-green-400 text-xl font-bold">120ms</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Network Latency:</p>
+                    <p class="text-yellow-400 text-xl font-bold">45ms</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Error Rate:</p>
+                    <p class="text-red-400 text-xl font-bold">2%</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Uptime:</p>
+                    <p class="text-green-400 text-xl font-bold">99.9%</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded shadow-lg col-span-1 md:col-span-2 lg:col-span-3">
+            <h2 class="text-lg font-semibold">📍 Location & Navigation</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Current Position:</p>
+                    <p class="text-blue-400 text-xl font-bold">Lat: 37.7749</p>
+                    <p class="text-blue-400 text-xl font-bold">Long: -122.4194</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Heading:</p>
+                    <p class="text-yellow-400 text-xl font-bold">North</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Speed:</p>
+                    <p class="text-green-400 text-xl font-bold">1.2 m/s</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

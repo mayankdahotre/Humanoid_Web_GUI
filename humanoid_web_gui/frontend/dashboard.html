@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Humanoid Robot Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <style>
+        @media (max-width: 1024px) {
+            .grid-cols-3, .grid-cols-2 {
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+    <!-- Title Bar -->
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+        <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+        <nav>
+            <ul class="flex space-x-4">
+                <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main class="p-6 mt-16">
+        <section class="bg-gray-800 p-4 rounded shadow flex justify-between items-center">
+            <h1 class="text-2xl font-semibold">Dashboard</h1>
+            <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition animate-pulse">🚨 Emergency Stop</button>
+        </section>
+        
+        <section class="grid grid-cols-3 gap-4 mt-6">
+            <!-- Live Camera -->
+            <div class="bg-gray-800 p-4 rounded shadow relative">
+                <h2 class="text-lg font-semibold">📷 Live Camera</h2>
+                <img src="placeholder.jpg" alt="Live feed" class="w-full mt-2 rounded">
+            </div>
+            
+            <!-- Robot Status -->
+            <div class="bg-gray-800 p-4 rounded shadow">
+                <h2 class="text-lg font-semibold">📊 Robot Status</h2>
+                <p>Battery: <span class="text-green-400">85%</span></p>
+                <p>Temperature: <span class="text-red-400">45°C</span></p>
+            </div>
+            
+            <!-- Controls -->
+            <div class="bg-gray-800 p-4 rounded shadow">
+                <h2 class="text-lg font-semibold">🎮 Controls</h2>
+                <div class="grid grid-cols-3 gap-2">
+                    <button class="bg-blue-500 text-white p-4 rounded">⬆</button>
+                    <button class="bg-gray-700 text-white p-4 rounded">⬇</button>
+                    <button class="bg-green-500 text-white p-4 rounded">➡</button>
+                    <button class="bg-green-500 text-white p-4 rounded">⬅</button>
+                </div>
+            </div>
+        </section>
+        
+        <section class="grid grid-cols-2 gap-4 mt-6">
+            <!-- AI Behavior -->
+            <div class="bg-gray-800 p-4 rounded shadow">
+                <h2 class="text-lg font-semibold">🧠 AI Behavior</h2>
+                <select class="w-full bg-gray-700 text-white p-2 rounded">
+                    <option>Idle Mode</option>
+                    <option>Face Tracking</option>
+                    <option>Object Recognition</option>
+                    <option>Speech Interaction</option>
+                </select>
+            </div>
+            
+            <!-- Voice Commands -->
+            <div class="bg-gray-800 p-4 rounded shadow">
+                <h2 class="text-lg font-semibold">🎙 Voice Commands</h2>
+                <button class="bg-purple-500 text-white px-4 py-2 rounded w-full">🎤 Start Listening</button>
+            </div>
+        </section>
+        
+        <section class="grid grid-cols-2 gap-4 mt-6">
+            <!-- Mission Planner -->
+            <div class="bg-gray-800 p-4 rounded shadow">
+                <h2 class="text-lg font-semibold">📅 Mission Planner</h2>
+                <input type="text" placeholder="Enter Task" class="w-full p-2 rounded bg-gray-700 text-white">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2 w-full">➕ Add Task</button>
+            </div>
+            
+            <!-- Sensor Data -->
+            <div class="bg-gray-800 p-4 rounded shadow">
+                <h2 class="text-lg font-semibold">🛠 Sensor Data</h2>
+                <p>IMU: <span class="text-green-400">Stable</span></p>
+                <p>Obstacle Detection: <span class="text-red-400">🚧 Obstacle Ahead</span></p>
+            </div>
+        </section>
+        
+        <section class="mt-6">
+            <!-- System Logs -->
+            <div class="bg-gray-800 p-4 rounded shadow">
+                <h2 class="text-lg font-semibold">📜 System Logs</h2>
+                <div id="logContainer" class="h-32 overflow-y-auto border p-2 text-sm bg-gray-900 text-gray-300 rounded">
+                    <p>[12:30:45] ✅ System initialized</p>
+                    <p>[12:31:00] 🔗 Connected to ROS</p>
+                    <p>[12:32:15] ⚠️ Obstacle detected</p>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
