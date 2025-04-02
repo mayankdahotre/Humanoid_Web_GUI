@@ -1,0 +1,288 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleoperation - Humanoid Robot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            document.addEventListener("keydown", (event) => {
+                handleKeyPress(event.key.toLowerCase());
+            });
+
+            document.querySelectorAll(".motor-slider").forEach(slider => {
+                slider.addEventListener("input", () => {
+                    document.getElementById(slider.dataset.label).textContent = slider.value;
+                });
+            });
+        });
+
+        function handleKeyPress(key) {
+            let action = "";
+            switch (key) {
+                case 'w': action = "Moving Forward"; break;
+                case 's': action = "Moving Backward"; break;
+                case 'a': action = "Turning Left"; break;
+                case 'd': action = "Turning Right"; break;
+            }
+            document.getElementById("actionStatus").textContent = action;
+        }
+    </script>
+</head>
+<body class="bg-gray-900 text-gray-200">
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+        <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+        <nav>
+            <ul class="flex space-x-4">
+                <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main class="p-6 mt-16">
+        <h1 class="text-2xl font-semibold">🎮 Teleoperation</h1>
+        <div class="mt-6 bg-gray-800 p-4 rounded shadow">
+            <h2 class="text-lg font-semibold">Motor Control</h2>
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-md font-semibold">Left Arm</h3>
+                    <div class="space-y-2">
+                        <label>Motor 1: <span id="motor1-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor1-label">
+                        <label>Motor 2: <span id="motor2-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor2-label">
+                        <label>Motor 3: <span id="motor3-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor3-label">
+                        <label>Motor 4: <span id="motor4-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor4-label">
+                        <label>Motor 5: <span id="motor5-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor5-label">
+                        <label>Motor 6: <span id="motor6-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor6-label">
+                        <label>Motor 7: <span id="motor7-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor7-label">
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-md font-semibold">Right Arm</h3>
+                    <div class="space-y-2">
+                        <label>Motor 8: <span id="motor8-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor8-label">
+                        <label>Motor 9: <span id="motor9-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor9-label">
+                        <label>Motor 10: <span id="motor10-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor10-label">
+                        <label>Motor 11: <span id="motor11-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor11-label">
+                        <label>Motor 12: <span id="motor12-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor12-label">
+                        <label>Motor 13: <span id="motor13-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor13-label">
+                        <label>Motor 14: <span id="motor14-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor14-label">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 bg-gray-800 p-4 rounded shadow">
+            <h2 class="text-lg font-semibold">Live Camera Feed</h2>
+            <img src="http://localhost:5000/video_feed" alt="Live Camera" class="w-full rounded">
+        </div>
+
+        <div class="mt-6 bg-gray-800 p-4 rounded shadow">
+            <h2 class="text-lg font-semibold">Live Feedback</h2>
+            <p class="text-green-400">✅ Connection Stable</p>
+            <p class="text-gray-400">Response Time: <span id="responseTime">50ms</span></p>
+            <p class="text-yellow-400 mt-2">Action: <span id="actionStatus">Idle</span></p>
+        </div>
+    </main>
+    <script>
+        const video = document.getElementById('video');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error("Error accessing the camera: ", err);
+            }
+        }
+
+        refreshBtn.addEventListener('click', startCamera);
+
+        // Start the camera on page load
+        window.onload = startCamera;
+    </script>
+</body>
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleoperation - Humanoid Robot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            document.addEventListener("keydown", (event) => {
+                handleKeyPress(event.key.toLowerCase());
+            });
+
+            document.querySelectorAll(".motor-slider").forEach(slider => {
+                slider.addEventListener("input", () => {
+                    document.getElementById(slider.dataset.label).textContent = slider.value;
+                });
+            });
+
+            // Initialize camera feed
+            initializeCameraFeed();
+        });
+
+        function initializeCameraFeed() {
+            const videoElement = document.getElementById("cameraFeed");
+
+            // Access the webcam using getUserMedia
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    videoElement.srcObject = stream; // Set the webcam stream to the video element
+                })
+                .catch(err => {
+                    console.error("Error accessing webcam:", err);
+                    alert("Could not access webcam.");
+                });
+        }
+
+        function handleKeyPress(key) {
+            let action = "";
+            switch (key) {
+                case 'w': action = "Moving Forward"; break;
+                case 's': action = "Moving Backward"; break;
+                case 'a': action = "Turning Left"; break;
+                case 'd': action = "Turning Right"; break;
+                case 'o': toggleGripper(true); break;
+                case 'c': toggleGripper(false); break;
+                case 'e': emergencyStop(); break; // Added emergency stop
+            }
+            document.getElementById("actionStatus").textContent = action;
+        }
+
+        function toggleGripper(open) {
+            const action = open ? "Opening Gripper" : "Closing Gripper";
+            document.getElementById("actionStatus").textContent = action;
+            console.log(action);
+            // Here you can add ROS publishing logic for the gripper
+        }
+
+        function emergencyStop() {
+            document.getElementById("actionStatus").textContent = "Emergency Stop!";
+            console.log("Emergency Stop Triggered!");
+            // Add logic for sending emergency stop signal to ROS
+        }
+    </script>
+</head>
+
+<body class="bg-gray-900 text-gray-200">
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+        <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+        <nav>
+            <ul class="flex space-x-4">
+                <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                <li><a href="segmentation.html" class="hover:text-yellow-400">Segmentation</a></li>
+                <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main class="p-6 mt-16">
+        <h1 class="text-2xl font-semibold">🎮 Teleoperation</h1>
+        
+        <!-- Flex container to display both the camera feed and MoveIt! RViz visualization -->
+        <div class="mt-6 grid grid-cols-2 gap-6">
+            <!-- Webcam Feed -->
+            <div class="bg-gray-800 p-4 rounded shadow">
+                <h2 class="text-lg font-semibold">Live Camera Feed</h2>
+                <video id="cameraFeed" class="w-full h-96 bg-black" autoplay></video>
+            </div>
+
+            <!-- MoveIt! RViz Visualization -->
+            <div class="bg-gray-800 p-4 rounded shadow">
+                <h2 class="text-lg font-semibold">MoveIt! Visualization</h2>
+                <div id="moveit-viewer" class="w-full h-96 bg-black"></div>
+            </div>
+        </div>
+
+        <!-- Motor Control Section -->
+        <div class="mt-6 bg-gray-800 p-4 rounded shadow">
+            <h2 class="text-lg font-semibold">Motor Control</h2>
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-md font-semibold">Left Arm</h3>
+                    <div class="space-y-2">
+                        <label>Motor 1: <span id="motor1-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor1-label">
+                        <label>Motor 2: <span id="motor2-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor2-label">
+                        <label>Motor 3: <span id="motor3-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor3-label">
+                        <label>Motor 4: <span id="motor4-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor4-label">
+                        <label>Motor 5: <span id="motor5-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor5-label">
+                        <label>Motor 6: <span id="motor6-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor6-label">
+                        <label>Motor 7: <span id="motor7-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor7-label">
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-md font-semibold">Right Arm</h3>
+                    <div class="space-y-2">
+                        <label>Motor 8: <span id="motor8-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor8-label">
+                        <label>Motor 9: <span id="motor9-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor9-label">
+                        <label>Motor 10: <span id="motor10-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor10-label">
+                        <label>Motor 11: <span id="motor11-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor11-label">
+                        <label>Motor 12: <span id="motor12-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor12-label">
+                        <label>Motor 13: <span id="motor13-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor13-label">
+                        <label>Motor 14: <span id="motor14-label">5</span></label>
+                        <input type="range" min="1" max="1000" value="500" class="motor-slider w-full" data-label="motor14-label">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Status and Control Buttons -->
+        <div class="mt-6 bg-gray-800 p-4 rounded shadow">
+            <h2 class="text-lg font-semibold">Action Status</h2>
+            <p id="actionStatus" class="text-lg">Idle</p>
+            <button id="emergencyStopButton" onclick="emergencyStop()" class="bg-red-600 text-white p-2 rounded mt-2 w-full">Emergency Stop</button>
+            <button id="gripperOpenButton" onclick="toggleGripper(true)" class="bg-green-600 text-white p-2 rounded mt-2 w-full">Gripper Open</button>
+            <button id="gripperCloseButton" onclick="toggleGripper(false)" class="bg-blue-600 text-white p-2 rounded mt-2 w-full">Gripper Close</button>
+        </div>
+    </main>
+</body>
+</html>

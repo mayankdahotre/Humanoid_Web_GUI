@@ -1,0 +1,275 @@
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interaction - Humanoid Robot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script defer src="script.js"></script>
+</head>
+
+<body class="bg-gray-900 text-gray-200">
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+        <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+        <nav>
+            <ul class="flex space-x-4">
+                <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                <li><a href="segmentation.html" class="hover:text-yellow-400">Segmentation</a></li>
+                <li><a href="llm.html" class="hover:text-yellow-400">LLM</a></li>
+                <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="p-6 mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-gray-800 p-6 rounded shadow-lg col-span-1 md:col-span-2 lg:col-span-3">
+            <h2 class="text-lg font-semibold">🔊 Voice & Text Interaction</h2>
+            <div id="chat-box" class="h-64 overflow-y-auto border border-blue-400 p-4 mb-4 text-left bg-gray-900 rounded">
+                <p class="text-blue-300">🤖 Hello! How can I assist you today?</p>
+            </div>
+            <div class="flex space-x-2 mb-4">
+                <input type="text" id="user-input" placeholder="Type a message..." class="flex-1 p-2 text-black rounded">
+                <button id="send-btn" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition">Send</button>
+                <button id="voice-btn" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition">🎤 Speak</button>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded shadow-lg">
+            <h2 class="text-lg font-semibold">⚙️ AI Settings</h2>
+            <label for="voice-toggle" class="block mt-2">Enable Voice Interaction:</label>
+            <input type="checkbox" id="voice-toggle" class="transform scale-125">
+            <label for="ai-mode" class="block mt-4">Select AI Mode:</label>
+            <select id="ai-mode" class="w-full p-2 rounded text-black">
+                <option>Conversational</option>
+                <option>Command Mode</option>
+                <option>Learning Mode</option>
+                <option>Autonomous Mode</option>
+            </select>
+            <label for="response-speed" class="block mt-4">Response Speed:</label>
+            <input type="range" id="response-speed" min="1" max="10" value="5" class="w-full">
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded shadow-lg">
+            <h2 class="text-lg font-semibold">📜 Robot Response Log</h2>
+            <textarea id="response-log" rows="6" readonly class="w-full p-2 text-black rounded bg-gray-900 border border-gray-600"></textarea>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded shadow-lg col-span-1 md:col-span-2 lg:col-span-3">
+            <h2 class="text-lg font-semibold">📊 AI Performance Metrics</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Response Accuracy:</p>
+                    <p class="text-green-400 text-xl font-bold">98%</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Processing Speed:</p>
+                    <p class="text-green-400 text-xl font-bold">250ms</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Recent Commands:</p>
+                    <ul class="list-disc ml-4 text-gray-300">
+                        <li>Turn left</li>
+                        <li>Pick up object</li>
+                        <li>Analyze environment</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Active AI Mode:</p>
+                    <p class="text-yellow-400 text-xl font-bold">Conversational</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html> -->
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interaction - Humanoid Robot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script defer>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sendButton = document.getElementById('send-btn');
+            const voiceButton = document.getElementById('voice-btn');
+            const userInput = document.getElementById('user-input');
+            const chatBox = document.getElementById('chat-box');
+            const responseLog = document.getElementById('response-log');
+            const voiceToggle = document.getElementById('voice-toggle');
+            const aiModeSelect = document.getElementById('ai-mode');
+            const responseSpeedRange = document.getElementById('response-speed');
+            
+            // Function to simulate sending a message
+            const sendMessage = (message) => {
+                const userMessage = document.createElement('p');
+                userMessage.classList.add('text-blue-300');
+                userMessage.textContent = `You: ${message}`;
+                chatBox.appendChild(userMessage);
+
+                const botReply = document.createElement('p');
+                botReply.classList.add('text-green-300');
+                botReply.textContent = `🤖 Response: ${message}`; // Simulating a bot response
+                chatBox.appendChild(botReply);
+                
+                chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the latest message
+
+                // Add to response log
+                responseLog.value += `You: ${message}\n🤖 Response: ${message}\n\n`;
+                responseLog.scrollTop = responseLog.scrollHeight;
+            };
+
+            // Send message when the Send button is clicked
+            sendButton.addEventListener('click', () => {
+                const message = userInput.value.trim();
+                if (message) {
+                    sendMessage(message);
+                    userInput.value = ''; // Clear the input
+                }
+            });
+
+            // Function to handle voice input (using Speech Recognition API)
+            const handleVoiceInput = () => {
+                if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+                    alert('Your browser does not support speech recognition!');
+                    return;
+                }
+
+                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'en-US';
+                recognition.start();
+
+                recognition.onresult = (event) => {
+                    const voiceMessage = event.results[0][0].transcript;
+                    userInput.value = voiceMessage; // Display speech in the input box
+                    sendMessage(voiceMessage); // Send the voice message
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error', event);
+                    alert('There was an error with speech recognition.');
+                };
+            };
+
+            // Toggle Voice Interaction
+            voiceToggle.addEventListener('change', () => {
+                if (voiceToggle.checked) {
+                    voiceButton.disabled = false;
+                } else {
+                    voiceButton.disabled = true;
+                }
+            });
+
+            // Trigger voice input when the Speak button is clicked
+            voiceButton.addEventListener('click', handleVoiceInput);
+
+            // Optionally, handle AI mode and response speed settings
+            aiModeSelect.addEventListener('change', () => {
+                const selectedMode = aiModeSelect.value;
+                console.log(`AI Mode changed to: ${selectedMode}`);
+                // Simulate changing AI behavior based on selected mode
+            });
+
+            responseSpeedRange.addEventListener('input', () => {
+                const responseSpeed = responseSpeedRange.value;
+                console.log(`Response Speed: ${responseSpeed}`);
+                // Simulate adjusting response speed
+            });
+        });
+    </script>
+</head>
+
+<body class="bg-gray-900 text-gray-200">
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+        <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+        <nav>
+            <ul class="flex space-x-4">
+                <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                <li><a href="segmentation.html" class="hover:text-yellow-400">Segmentation</a></li>
+                <li><a href="llm.html" class="hover:text-yellow-400">LLM</a></li>
+                <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main class="p-6 mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-gray-800 p-6 rounded shadow-lg col-span-1 md:col-span-2 lg:col-span-3">
+            <h2 class="text-lg font-semibold">🔊 Voice & Text Interaction</h2>
+            <div id="chat-box" class="h-64 overflow-y-auto border border-blue-400 p-4 mb-4 text-left bg-gray-900 rounded">
+                <p class="text-blue-300">🤖 Hello! How can I assist you today?</p>
+            </div>
+            <div class="flex space-x-2 mb-4">
+                <input type="text" id="user-input" placeholder="Type a message..." class="flex-1 p-2 text-black rounded">
+                <button id="send-btn" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition">Send</button>
+                <button id="voice-btn" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 transition" disabled>🎤 Speak</button>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded shadow-lg">
+            <h2 class="text-lg font-semibold">⚙️ AI Settings</h2>
+            <label for="voice-toggle" class="block mt-2">Enable Voice Interaction:</label>
+            <input type="checkbox" id="voice-toggle" class="transform scale-125">
+            <label for="ai-mode" class="block mt-4">Select AI Mode:</label>
+            <select id="ai-mode" class="w-full p-2 rounded text-black">
+                <option>Conversational</option>
+                <option>Command Mode</option>
+                <option>Learning Mode</option>
+                <option>Autonomous Mode</option>
+            </select>
+            <label for="response-speed" class="block mt-4">Response Speed:</label>
+            <input type="range" id="response-speed" min="1" max="10" value="5" class="w-full">
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded shadow-lg">
+            <h2 class="text-lg font-semibold">📜 Robot Response Log</h2>
+            <textarea id="response-log" rows="6" readonly class="w-full p-2 text-black rounded bg-gray-900 border border-gray-600"></textarea>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded shadow-lg col-span-1 md:col-span-2 lg:col-span-3">
+            <h2 class="text-lg font-semibold">📊 AI Performance Metrics</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Response Accuracy:</p>
+                    <p class="text-green-400 text-xl font-bold">98%</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Processing Speed:</p>
+                    <p class="text-green-400 text-xl font-bold">250ms</p>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Recent Commands:</p>
+                    <ul class="list-disc ml-4 text-gray-300">
+                        <li>Turn left</li>
+                        <li>Pick up object</li>
+                        <li>Analyze environment</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-gray-900 rounded text-left">
+                    <p class="text-gray-400">Active AI Mode:</p>
+                    <p class="text-yellow-400 text-xl font-bold">Conversational</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

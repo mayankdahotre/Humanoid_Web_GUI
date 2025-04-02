@@ -1,0 +1,547 @@
+<!--version 1 -->
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Speech-to-Speech Dashboard</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+        <style>
+            @media (max-width: 1024px) {
+                .grid-cols-3, .grid-cols-2 {
+                    grid-template-columns: repeat(1, minmax(0, 1fr));
+                }
+            }
+        </style>
+    </head>
+    <body class="bg-gray-900 text-gray-200">
+        <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+            <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                    <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                    <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                    <li><a href="segmentation.html" class="hover:text-yellow-400">Segmentation</a></li>
+                    <li><a href="llm.html" class="hover:text-yellow-400">LLM</a></li>
+                    <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                    <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                    <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                    <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="p-6 mt-16">
+            <section class="bg-gray-800 p-4 rounded shadow flex justify-between items-center">
+                <h1 class="text-2xl font-semibold">Speech-to-Speech Control</h1>
+                <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition animate-pulse">🚨 Emergency Stop</button>
+            </section>
+
+            <section class="grid grid-cols-3 gap-4 mt-6">
+                <div class="bg-gray-800 p-4 rounded shadow">
+                    <h2 class="text-lg font-semibold">🎤 Speech to Text</h2>
+                    <button id="startListening" class="bg-green-500 text-white px-4 py-2 rounded w-full">Start Listening</button>
+                    <p id="speechOutput" class="text-gray-300 mt-4">Transcribed text will appear here...</p>
+                </div>
+
+                <div class="bg-gray-800 p-4 rounded shadow">
+                    <h2 class="text-lg font-semibold">💬 LLM Inference</h2>
+                    <textarea id="inputText" class="w-full p-2 rounded bg-gray-700 text-white" rows="4" placeholder="LLM will process this text..."></textarea>
+                    <button id="processText" class="bg-blue-500 text-white px-4 py-2 rounded mt-2 w-full">Process Text</button>
+                    <p id="llmResponse" class="text-gray-300 mt-4">LLM response will appear here...</p>
+                </div>
+
+                <div class="bg-gray-800 p-4 rounded shadow">
+                    <h2 class="text-lg font-semibold">🔊 Text to Speech</h2>
+                    <button id="textToSpeechButton" class="bg-purple-500 text-white px-4 py-2 rounded w-full">Speak</button>
+                    <p id="speechStatus" class="text-gray-300 mt-4">Press the button to hear the speech output...</p>
+                </div>
+            </section>
+
+            <section class="mt-6">
+                <div class="bg-gray-800 p-4 rounded shadow">
+                    <h2 class="text-lg font-semibold">📜 System Logs</h2>
+                    <div id="logContainer" class="h-32 overflow-y-auto border p-2 text-sm bg-gray-900 text-gray-300 rounded">
+                        <p>[12:30:45] ✅ System initialized</p>
+                        <p>[12:31:00] 🔗 Speech to Text started</p>
+                        <p>[12:32:15] 🗣 LLM processing completed</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <script>
+            // Initialize speech-to-text and text-to-speech functionality
+            document.getElementById('startListening').addEventListener('click', startListening);
+            document.getElementById('processText').addEventListener('click', processText);
+            document.getElementById('textToSpeechButton').addEventListener('click', textToSpeech);
+
+            let recognition;
+
+            // Function for Speech-to-Text
+            function startListening() {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'en-US';
+
+                recognition.onstart = () => {
+                    document.getElementById('speechOutput').textContent = 'Listening...';
+                };
+
+                recognition.onresult = (event) => {
+                    const speechResult = event.results[0][0].transcript;
+                    document.getElementById('speechOutput').textContent = `You said: ${speechResult}`;
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech Recognition Error', event);
+                    document.getElementById('speechOutput').textContent = 'Error occurred in speech recognition.';
+                };
+
+                recognition.start();
+            }
+
+            // Function for processing text with LLM
+            function processText() {
+                const inputText = document.getElementById('inputText').value;
+                if (!inputText) {
+                    document.getElementById('llmResponse').textContent = 'Please enter text to process.';
+                    return;
+                }
+
+                // Simulate LLM inference (replace this with actual model inference)
+                const llmResponse = `LLM processed the input: ${inputText}`;
+                document.getElementById('llmResponse').textContent = llmResponse;
+            }
+
+            // Function for Text-to-Speech
+            function textToSpeech() {
+                const text = document.getElementById('llmResponse').textContent || "No response to read";
+                const speech = new SpeechSynthesisUtterance(text);
+                speech.lang = "en-US";
+                window.speechSynthesis.speak(speech);
+                document.getElementById('speechStatus').textContent = 'Speaking...';
+            }
+        </script>
+    </body>
+</html> -->
+
+
+<!-- version 2 -->
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Speech-to-Speech Dashboard</title>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        <style>
+            @media (max-width: 1024px) {
+                .grid-cols-3, .grid-cols-2 {
+                    grid-template-columns: repeat(1, minmax(0, 1fr));
+                }
+            }
+        </style>
+    </head>
+    <body class="bg-gray-900 text-gray-200">
+        <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+            <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                    <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                    <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                    <li><a href="segmentation.html" class="hover:text-yellow-400">Segmentation</a></li>
+                    <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                    <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                    <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                    <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="p-8 mt-24">
+            <section class="bg-gray-800 p-6 rounded-lg shadow-lg mb-8 flex justify-between items-center">
+                <h1 class="text-2xl font-semibold">Speech-to-Speech Control Panel</h1>
+                <button class="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 transition animate-pulse">🚨 Emergency Stop</button>
+            </section>
+
+            <section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
+                    <h2 class="text-xl font-semibold">🎤 Speech to Text</h2>
+                    <button id="startListening" class="w-full bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 transition text-lg">Start Listening</button>
+                    <p id="speechOutput" class="text-gray-300 mt-4">Transcribed text will appear here...</p>
+                </div>
+
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
+                    <h2 class="text-xl font-semibold">💬 LLM Inference</h2>
+                    <textarea id="inputText" class="w-full p-4 rounded-lg bg-gray-700 text-white text-lg" rows="4" placeholder="Type or process your text here..."></textarea>
+                    <button id="processText" class="w-full bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition text-lg">Process Text</button>
+                    <p id="llmResponse" class="text-gray-300 mt-4">LLM response will appear here...</p>
+                </div>
+
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
+                    <h2 class="text-xl font-semibold">🔊 Text to Speech</h2>
+                    <textarea id="textToSpeechInput" class="w-full p-4 rounded-lg bg-gray-700 text-white text-lg" rows="4" placeholder="Enter text to be spoken here..."></textarea>
+                    <button id="textToSpeechButton" class="w-full bg-purple-600 text-white px-6 py-3 rounded-full hover:bg-purple-700 transition text-lg">Speak</button>
+                    <p id="speechStatus" class="text-gray-300 mt-4">Press the button to hear the speech output...</p>
+                </div>
+            </section>
+
+            <section class="mt-12 bg-gray-800 p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold">📜 System Logs</h2>
+                <div id="logContainer" class="h-48 overflow-y-auto border p-4 text-sm bg-gray-900 text-gray-300 rounded-lg mt-4">
+                    <p>[12:30:45] ✅ System initialized</p>
+                    <p>[12:31:00] 🔗 Speech to Text started</p>
+                    <p>[12:32:15] 🗣 LLM processing completed</p>
+                </div>
+            </section>
+        </main>
+
+        <script>
+            // Initialize speech-to-text and text-to-speech functionality
+            document.getElementById('startListening').addEventListener('click', startListening);
+            document.getElementById('processText').addEventListener('click', processText);
+            document.getElementById('textToSpeechButton').addEventListener('click', textToSpeech);
+
+            let recognition;
+
+            // Function for Speech-to-Text
+            function startListening() {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'en-US';
+
+                recognition.onstart = () => {
+                    document.getElementById('speechOutput').textContent = 'Listening...';
+                };
+
+                recognition.onresult = (event) => {
+                    const speechResult = event.results[0][0].transcript;
+                    document.getElementById('speechOutput').textContent = `You said: ${speechResult}`;
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech Recognition Error', event);
+                    document.getElementById('speechOutput').textContent = 'Error occurred in speech recognition.';
+                };
+
+                recognition.start();
+            }
+
+            // Function for processing text with LLM
+            function processText() {
+                const inputText = document.getElementById('inputText').value;
+                if (!inputText) {
+                    document.getElementById('llmResponse').textContent = 'Please enter text to process.';
+                    return;
+                }
+
+                // Simulate LLM inference (replace this with actual model inference)
+                const llmResponse = `LLM processed the input: ${inputText}`;
+                document.getElementById('llmResponse').textContent = llmResponse;
+            }
+
+            // Function for Text-to-Speech
+            function textToSpeech() {
+                const text = document.getElementById('textToSpeechInput').value || "No text to speak";
+                const speech = new SpeechSynthesisUtterance(text);
+                speech.lang = "en-US";
+                window.speechSynthesis.speak(speech);
+                document.getElementById('speechStatus').textContent = 'Speaking...';
+            }
+        </script>
+    </body>
+</html> -->
+
+
+
+
+
+
+<!-- version 3 -->
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Speech-to-Speech Dashboard</title>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        <style>
+            @media (max-width: 1024px) {
+                .grid-cols-3, .grid-cols-2 {
+                    grid-template-columns: repeat(1, minmax(0, 1fr));
+                }
+            }
+        </style>
+    </head>
+    <body class="bg-gray-900 text-gray-200">
+        <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+            <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                    <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                    <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                    <li><a href="segmentation.html" class="hover:text-yellow-400">Segmentation</a></li>
+                    <li><a href="llm.html" class="hover:text-yellow-400">LLM</a></li>
+                    <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                    <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                    <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                    <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="p-8 mt-24">
+            <section class="bg-gray-800 p-6 rounded-lg shadow-lg mb-8 flex justify-between items-center">
+                <h1 class="text-2xl font-semibold">Speech-to-Speech Control Panel</h1>
+                <button class="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 transition animate-pulse">🚨 Emergency Stop</button>
+            </section>
+
+            <section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
+                    <h2 class="text-xl font-semibold">🎤 Speech to Text</h2>
+                    <button id="startListening" class="w-full bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 transition text-lg">Start Listening</button>
+                    <button id="stopListening" class="w-full bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 transition text-lg mt-4" style="display: none;">Stop Listening</button>
+                    <p id="speechOutput" class="text-gray-300 mt-4">Transcribed text will appear here...</p>
+                </div>
+
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
+                    <h2 class="text-xl font-semibold">💬 LLM Inference</h2>
+                    <textarea id="inputText" class="w-full p-4 rounded-lg bg-gray-700 text-white text-lg" rows="4" placeholder="Type or process your text here..."></textarea>
+                    <button id="processText" class="w-full bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition text-lg">Process Text</button>
+                    <p id="llmResponse" class="text-gray-300 mt-4">LLM response will appear here...</p>
+                </div>
+
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
+                    <h2 class="text-xl font-semibold">🔊 Text to Speech</h2>
+                    <textarea id="textToSpeechInput" class="w-full p-4 rounded-lg bg-gray-700 text-white text-lg" rows="4" placeholder="Enter text to be spoken here..."></textarea>
+                    <button id="textToSpeechButton" class="w-full bg-purple-600 text-white px-6 py-3 rounded-full hover:bg-purple-700 transition text-lg">Speak</button>
+                    <p id="speechStatus" class="text-gray-300 mt-4">Press the button to hear the speech output...</p>
+                </div>
+            </section>
+
+            <section class="mt-12 bg-gray-800 p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold">📜 System Logs</h2>
+                <div id="logContainer" class="h-48 overflow-y-auto border p-4 text-sm bg-gray-900 text-gray-300 rounded-lg mt-4">
+                    <p>[12:30:45] ✅ System initialized</p>
+                    <p>[12:31:00] 🔗 Speech to Text started</p>
+                    <p>[12:32:15] 🗣 LLM processing completed</p>
+                </div>
+            </section>
+        </main>
+
+        <script>
+            // Initialize speech-to-text and text-to-speech functionality
+            document.getElementById('startListening').addEventListener('click', startListening);
+            document.getElementById('stopListening').addEventListener('click', stopListening);
+            document.getElementById('processText').addEventListener('click', processText);
+            document.getElementById('textToSpeechButton').addEventListener('click', textToSpeech);
+
+            let recognition;
+
+            // Function for Speech-to-Text
+            function startListening() {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'en-US';
+
+                recognition.onstart = () => {
+                    document.getElementById('speechOutput').textContent = 'Listening...';
+                    document.getElementById('startListening').style.display = 'none';
+                    document.getElementById('stopListening').style.display = 'block';
+                };
+
+                recognition.onresult = (event) => {
+                    const speechResult = event.results[0][0].transcript;
+                    document.getElementById('speechOutput').textContent = `You said: ${speechResult}`;
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech Recognition Error', event);
+                    document.getElementById('speechOutput').textContent = 'Error occurred in speech recognition.';
+                };
+
+                recognition.start();
+            }
+
+            // Function to stop listening
+            function stopListening() {
+                if (recognition) {
+                    recognition.stop();
+                    document.getElementById('speechOutput').textContent = 'Listening stopped.';
+                    document.getElementById('startListening').style.display = 'block';
+                    document.getElementById('stopListening').style.display = 'none';
+                }
+            }
+
+            // Function for processing text with LLM
+            function processText() {
+                const inputText = document.getElementById('inputText').value;
+                if (!inputText) {
+                    document.getElementById('llmResponse').textContent = 'Please enter text to process.';
+                    return;
+                }
+
+                // Simulate LLM inference (replace this with actual model inference)
+                const llmResponse = `LLM processed the input: ${inputText}`;
+                document.getElementById('llmResponse').textContent = llmResponse;
+            }
+
+            // Function for Text-to-Speech
+            function textToSpeech() {
+                const text = document.getElementById('textToSpeechInput').value || "No text to speak";
+                const speech = new SpeechSynthesisUtterance(text);
+                speech.lang = "en-US";
+                window.speechSynthesis.speak(speech);
+                document.getElementById('speechStatus').textContent = 'Speaking...';
+            }
+        </script>
+
+    </body>
+</html> -->
+
+
+
+
+
+<!-- version 4 -->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Speech-to-Speech Dashboard</title>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        <style>
+            @media (max-width: 1024px) {
+                .grid-cols-3, .grid-cols-2 {
+                    grid-template-columns: repeat(1, minmax(0, 1fr));
+                }
+            }
+        </style>
+    </head>
+    <body class="bg-gray-900 text-gray-200">
+        <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+            <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                    <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                    <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                    <li><a href="segmentation.html" class="hover:text-yellow-400">Segmentation</a></li>
+                    <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                    <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                    <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                    <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="p-8 mt-24">
+            <section class="bg-gray-800 p-6 rounded-lg shadow-lg mb-8 flex justify-between items-center">
+                <h1 class="text-2xl font-semibold">Speech-to-Speech Control Panel</h1>
+                <button class="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 transition animate-pulse">🚨 Emergency Stop</button>
+            </section>
+
+            <section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
+                    <h2 class="text-xl font-semibold">🎤 Speech to Text</h2>
+                    <button id="startListening" class="w-full bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 transition text-lg">Start Listening</button>
+                    <button id="stopListening" class="w-full bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 transition text-lg hidden">Stop Listening</button>
+                    <p id="speechOutput" class="text-gray-300 mt-4">Transcribed text will appear here...</p>
+                </div>
+
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
+                    <h2 class="text-xl font-semibold">💬 LLM Inference</h2>
+                    <textarea id="inputText" class="w-full p-4 rounded-lg bg-gray-700 text-white text-lg" rows="4" placeholder="Type or process your text here..."></textarea>
+                    <button id="processText" class="w-full bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition text-lg">Process Text</button>
+                    <p id="llmResponse" class="text-gray-300 mt-4">LLM response will appear here...</p>
+                </div>
+
+                <div class="bg-gray-800 p-6 rounded-lg shadow-lg space-y-4">
+                    <h2 class="text-xl font-semibold">🔊 Text to Speech</h2>
+                    <textarea id="textToSpeechInput" class="w-full p-4 rounded-lg bg-gray-700 text-white text-lg" rows="4" placeholder="Enter text to be spoken here..."></textarea>
+                    <button id="textToSpeechButton" class="w-full bg-purple-600 text-white px-6 py-3 rounded-full hover:bg-purple-700 transition text-lg">Speak</button>
+                    <p id="speechStatus" class="text-gray-300 mt-4">Press the button to hear the speech output...</p>
+                </div>
+            </section>
+
+            <section class="mt-12 bg-gray-800 p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold">📜 System Logs</h2>
+                <div id="logContainer" class="h-48 overflow-y-auto border p-4 text-sm bg-gray-900 text-gray-300 rounded-lg mt-4">
+                    <p>[12:30:45] ✅ System initialized</p>
+                    <p>[12:31:00] 🔗 Speech to Text started</p>
+                    <p>[12:32:15] 🗣 LLM processing completed</p>
+                </div>
+            </section>
+        </main>
+
+        <script>
+            // Initialize speech-to-text and text-to-speech functionality
+            document.getElementById('startListening').addEventListener('click', startListening);
+            document.getElementById('stopListening').addEventListener('click', stopListening);
+            document.getElementById('processText').addEventListener('click', processText);
+            document.getElementById('textToSpeechButton').addEventListener('click', textToSpeech);
+
+            let recognition;
+
+            // Function for Speech-to-Text
+            function startListening() {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'en-US';
+
+                recognition.onstart = () => {
+                    document.getElementById('speechOutput').textContent = 'Listening...';
+                    document.getElementById('startListening').classList.add('hidden');
+                    document.getElementById('stopListening').classList.remove('hidden');
+                };
+
+                recognition.onresult = (event) => {
+                    const speechResult = event.results[0][0].transcript;
+                    document.getElementById('speechOutput').textContent = `You said: ${speechResult}`;
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech Recognition Error', event);
+                    document.getElementById('speechOutput').textContent = 'Error occurred in speech recognition.';
+                };
+
+                recognition.start();
+            }
+
+            // Function to stop Speech-to-Text
+            function stopListening() {
+                recognition.stop();
+                document.getElementById('speechOutput').textContent = 'Stopped listening.';
+                document.getElementById('startListening').classList.remove('hidden');
+                document.getElementById('stopListening').classList.add('hidden');
+            }
+
+            // Function for processing text with LLM
+            function processText() {
+                const inputText = document.getElementById('inputText').value;
+                if (!inputText) {
+                    document.getElementById('llmResponse').textContent = 'Please enter text to process.';
+                    return;
+                }
+
+                // Simulate LLM inference (replace this with actual model inference)
+                const llmResponse = `LLM processed the input: ${inputText}`;
+                document.getElementById('llmResponse').textContent = llmResponse;
+            }
+
+            // Function for Text-to-Speech
+            function textToSpeech() {
+                const text = document.getElementById('textToSpeechInput').value || "No text to speak";
+                const speech = new SpeechSynthesisUtterance(text);
+                speech.lang = "en-US";
+                window.speechSynthesis.speak(speech);
+                document.getElementById('speechStatus').textContent = 'Speaking...';
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segmentation Visualization</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Initialize webcam feed on page load
+            initializeCameraFeed();
+        });
+
+        // Initialize webcam feed
+        function initializeCameraFeed() {
+            const videoElement = document.getElementById("cameraFeed");
+
+            // Access the webcam using getUserMedia
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    videoElement.srcObject = stream; // Set the webcam stream to the video element
+                })
+                .catch(err => {
+                    console.error("Error accessing webcam:", err);
+                    alert("Could not access webcam.");
+                });
+        }
+
+        // Function to simulate segmentation output (In a real-world case, replace this with actual model output)
+        function simulateSegmentation() {
+            const segmentationCanvas = document.getElementById("segmentationCanvas");
+            const ctx = segmentationCanvas.getContext("2d");
+
+            // Draw some example segmentation output (for example, a mask)
+            ctx.fillStyle = "rgba(255, 0, 0, 0.5)"; // Semi-transparent red mask
+            ctx.fillRect(50, 50, 200, 150); // Example of segmentation mask
+        }
+
+        // Real segmentation request to the backend server
+        async function requestSegmentation() {
+            const videoElement = document.getElementById("cameraFeed");
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            // Draw the current video frame to the canvas
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+            // Convert canvas to image data (base64 encoded)
+            const base64Image = canvas.toDataURL("image/png");
+
+            // Send the image data to the backend for segmentation
+            try {
+                const response = await fetch("http://localhost:5000/segment", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/octet-stream"
+                    },
+                    body: base64ToBlob(base64Image)
+                });
+
+                const data = await response.json();
+                if (data.segmentation) {
+                    // Update the segmentation canvas with the returned segmentation image
+                    const segmentationImage = new Image();
+                    segmentationImage.src = `data:image/png;base64,${data.segmentation}`;
+                    segmentationImage.onload = () => {
+                        const segmentationCanvas = document.getElementById("segmentationCanvas");
+                        const ctx = segmentationCanvas.getContext("2d");
+                        ctx.clearRect(0, 0, segmentationCanvas.width, segmentationCanvas.height);
+                        ctx.drawImage(segmentationImage, 0, 0, segmentationCanvas.width, segmentationCanvas.height);
+                    };
+                }
+            } catch (error) {
+                console.error("Error during segmentation request:", error);
+            }
+        }
+
+        // Convert base64 string to Blob for sending via fetch
+        function base64ToBlob(base64) {
+            const byteCharacters = atob(base64.split(",")[1]);
+            const byteArrays = [];
+
+            for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+                const slice = byteCharacters.slice(offset, offset + 1024);
+                const byteNumbers = new Array(slice.length);
+
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+
+            return new Blob(byteArrays, { type: "image/png" });
+        }
+
+        // Emergency Stop Button Handler
+        function emergencyStop() {
+            alert("Emergency Stop Activated! The system will stop.");
+            // Add any further emergency stop logic here (e.g., halt robot or camera feed)
+        }
+    </script>
+</head>
+
+<body class="bg-gray-900 text-gray-200">
+    <header class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-10">
+        <h2 class="text-xl font-bold">🤖 Humanoid Robot Dashboard</h2>
+        <nav>
+            <ul class="flex space-x-4">
+                <li><a href="dashboard.html" class="hover:text-yellow-400">Dashboard</a></li>
+                <li><a href="live_camera.html" class="hover:text-yellow-400">Live Camera</a></li>
+                <li><a href="teleoperation.html" class="hover:text-yellow-400">Teleoperation</a></li>
+                <li><a href="segmentation.html" class="hover:text-yellow-400">Segmentation</a></li>
+                <li><a href="llm.html" class="hover:text-yellow-400">LLM</a></li>
+                <li><a href="ai_interaction.html" class="hover:text-yellow-400">AI Interaction</a></li>
+                <li><a href="sensors.html" class="hover:text-yellow-400">Sensors</a></li>
+                <li><a href="logs.html" class="hover:text-yellow-400">Logs</a></li>
+                <li><a href="settings.html" class="hover:text-yellow-400">Settings</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main class="p-6 mt-16">
+        <section class="bg-gray-800 p-6 rounded-lg shadow-lg mb-8 flex justify-between items-center">
+            <h1 class="text-2xl font-semibold">🔍 Segmentation Output</h1>
+            <div class="flex space-x-4">
+                <button onclick="emergencyStop()" class="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 transition animate-pulse">🚨 Emergency Stop</button>
+                <button onclick="requestSegmentation()" class="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700">Run Segmentation</button>
+            </div>
+        </section>
+
+        <!-- Flex container to display both the camera feed and segmentation output -->
+        <div class="mt-6 grid grid-cols-2 gap-6">
+            <!-- Webcam Feed -->
+            <div class="bg-gray-800 p-4 rounded shadow">
+                <h2 class="text-lg font-semibold">Live Camera Feed</h2>
+                <video id="cameraFeed" class="w-full h-96 bg-black" autoplay></video>
+            </div>
+
+            <!-- Segmentation Output -->
+            <div class="bg-gray-800 p-4 rounded shadow">
+                <h2 class="text-lg font-semibold">Segmentation Output</h2>
+                <canvas id="segmentationCanvas" class="w-full h-96 bg-gray-700"></canvas>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
