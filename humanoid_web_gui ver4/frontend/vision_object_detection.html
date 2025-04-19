@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Object Detection - Humanoid Robot Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://ik.imagekit.io/freeflo/production/dd5d55f9-1e87-4442-853d-3c6a6bbb4c67.png?tr=w-3840,q-75&alt=media&pr-true');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        .glass {
+            backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .control-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .video-container video {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .detection-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .detection-box {
+            position: absolute;
+            border: 2px solid #00bcd4;
+            background: rgba(0, 188, 212, 0.1);
+        }
+
+        .detection-label {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 5px;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            background: rgba(0, 188, 212, 0.2);
+            border: 1px solid #00bcd4;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            background: rgba(0, 188, 212, 0.4);
+        }
+
+        .status-indicator {
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator.connected {
+            color: #4CAF50;
+        }
+
+        .status-indicator.disconnected {
+            color: #f44336;
+        }
+
+        .detection-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .detection-item {
+            padding: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detection-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="flex justify-between items-center px-8 py-4 glass sticky top-0 backdrop-blur-md z-10">
+        <h1 class="text-2xl font-bold">Perplex</h1>
+        <div class="space-x-6 text-lg">
+            <a href="dashboard2.html" class="text-white hover:text-cyan-400">Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-8 py-8">
+        <div class="glass">
+            <h1 class="text-4xl font-bold mb-6">Object Detection</h1>
+            
+            <div class="status-indicator disconnected" id="rosStatus">ROS Bridge Disconnected</div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="control-panel">
+                    <h2 class="text-2xl font-semibold mb-4">Live Feed</h2>
+                    
+                    <div class="video-container">
+                        <video id="cameraFeed" autoplay muted></video>
+                        <canvas id="detectionOverlay" class="detection-overlay"></canvas>
+                    </div>
+                    
+                    <div class="mt-4 flex justify-center space-x-4">
+                        <button id="connectROS" class="button">Connect to ROS</button>
+                        <button id="startCamera" class="button">Start Camera</button>
+                        <button id="stopCamera" class="button">Stop Camera</button>
+                    </div>
+                </div>
+                
+                <div class="control-panel">
+                    <h2 class="text-2xl font-semibold mb-4">Detection Settings</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block mb-2">Detection Model</label>
+                            <select id="detectionModel" class="w-full bg-gray-800 bg-opacity-50 text-white p-2 rounded-lg">
+                                <option value="yolo">YOLOv8</option>
+                                <option value="ssd">SSD</option>
+                                <option value="faster_rcnn">Faster R-CNN</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block mb-2">Confidence Threshold</label>
+                            <input type="range" id="confidenceThreshold" min="0" max="100" value="50" class="w-full">
+                            <span id="confidenceValue" class="text-sm">50%</span>
+                        </div>
+                        
+                        <div>
+                            <label class="block mb-2">Detected Objects</label>
+                            <div class="detection-list" id="detectionList">
+                                <!-- Detection items will be added here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ros = null;
+        let cameraTopic = null;
+        let detectionTopic = null;
+        let video = null;
+        let canvas = null;
+        let ctx = null;
+        
+        function connectToROS() {
+            ros = new ROSLIB.Ros({
+                url: 'ws://localhost:9090'
+            });
+
+            ros.on('connection', () => {
+                document.getElementById('rosStatus').textContent = 'ROS Bridge Connected';
+                document.getElementById('rosStatus').classList.remove('disconnected');
+                document.getElementById('rosStatus').classList.add('connected');
+                setupTopics();
+            });
+
+            ros.on('error', (error) => {
+                document.getElementById('rosStatus').textContent = 'ROS Bridge Error';
+                document.getElementById('rosStatus').classList.remove('connected');
+                document.getElementById('rosStatus').classList.add('disconnected');
+            });
+
+            ros.on('close', () => {
+                document.getElementById('rosStatus').textContent = 'ROS Bridge Disconnected';
+                document.getElementById('rosStatus').classList.remove('connected');
+                document.getElementById('rosStatus').classList.add('disconnected');
+            });
+        }
+        
+        function setupTopics() {
+            // Camera image subscriber
+            cameraTopic = new ROSLIB.Topic({
+                ros: ros,
+                name: '/camera/image_raw',
+                messageType: 'sensor_msgs/Image'
+            });
+            
+            // Detection results subscriber
+            detectionTopic = new ROSLIB.Topic({
+                ros: ros,
+                name: '/detection_results',
+                messageType: 'std_msgs/String'
+            });
+            
+            detectionTopic.subscribe((message) => {
+                updateDetections(JSON.parse(message.data));
+            });
+        }
+        
+        function setupCamera() {
+            video = document.getElementById('cameraFeed');
+            canvas = document.getElementById('detectionOverlay');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size to match video
+            video.addEventListener('loadedmetadata', () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+            });
+        }
+        
+        function updateDetections(detections) {
+            // Clear previous detections
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update detection list
+            const detectionList = document.getElementById('detectionList');
+            detectionList.innerHTML = '';
+            
+            // Draw new detections
+            detections.forEach(detection => {
+                const confidence = detection.confidence * 100;
+                if (confidence >= document.getElementById('confidenceThreshold').value) {
+                    // Draw bounding box
+                    const x = detection.bbox[0] * canvas.width;
+                    const y = detection.bbox[1] * canvas.height;
+                    const width = (detection.bbox[2] - detection.bbox[0]) * canvas.width;
+                    const height = (detection.bbox[3] - detection.bbox[1]) * canvas.height;
+                    
+                    ctx.strokeStyle = '#00bcd4';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x, y, width, height);
+                    
+                    // Draw label
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(x, y - 20, width, 20);
+                    ctx.fillStyle = 'white';
+                    ctx.font = '12px Arial';
+                    ctx.fillText(`${detection.class} (${confidence.toFixed(1)}%)`, x + 5, y - 5);
+                    
+                    // Add to detection list
+                    const item = document.createElement('div');
+                    item.className = 'detection-item';
+                    item.textContent = `${detection.class} (${confidence.toFixed(1)}%)`;
+                    detectionList.appendChild(item);
+                }
+            });
+        }
+        
+        // Initialize camera
+        setupCamera();
+        
+        // Event listeners
+        document.getElementById('connectROS').addEventListener('click', connectToROS);
+        
+        document.getElementById('startCamera').addEventListener('click', () => {
+            if (ros && cameraTopic) {
+                cameraTopic.subscribe((message) => {
+                    // Convert ROS image message to video frame
+                    const blob = new Blob([message.data], { type: 'image/jpeg' });
+                    const url = URL.createObjectURL(blob);
+                    video.src = url;
+                });
+            }
+        });
+        
+        document.getElementById('stopCamera').addEventListener('click', () => {
+            if (cameraTopic) {
+                cameraTopic.unsubscribe();
+                video.src = '';
+            }
+        });
+        
+        document.getElementById('confidenceThreshold').addEventListener('input', (e) => {
+            document.getElementById('confidenceValue').textContent = `${e.target.value}%`;
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (ros) {
+                ros.close();
+            }
+        });
+    </script>
+</body>
+</html> 

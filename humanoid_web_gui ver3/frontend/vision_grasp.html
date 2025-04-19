@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grasp Vision | Humanoid Robot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <style>
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://ik.imagekit.io/freeflo/production/dd5d55f9-1e87-4442-853d-3c6a6bbb4c67.png?tr=w-3840,q-75&alt=media&pr-true');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        .glass {
+            backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        nav a {
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #00bcd4;
+        }
+        
+        /* Dropdown Menu Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            min-width: 160px;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+            overflow: hidden;
+        }
+        
+        .dropdown-content a {
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-content a:hover {
+            background-color: rgba(0, 188, 212, 0.2);
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="flex justify-between items-center px-8 py-4 glass sticky top-0 backdrop-blur-md z-10">
+        <h1 class="text-2xl font-bold">Perplex</h1>
+        <div class="space-x-6 text-lg">
+            <a href="dashboard2.html">Dashboard</a>
+            <div class="dropdown inline-block">
+                <a href="javascript:void(0)">Vision</a>
+                <div class="dropdown-content">
+                    <a href="vision_sam.html">SAM</a>
+                    <a href="vision_grasp.html">Grasp</a>
+                    <a href="vision_rviz.html">RViz</a>
+                </div>
+            </div>
+            <a href="speech">Speech</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-16">
+        <div class="glass max-w-5xl mx-auto">
+            <h1 class="text-4xl font-bold mb-8 text-center">Grasp Detection</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Camera Feed -->
+                <div class="bg-black bg-opacity-50 rounded-xl p-4">
+                    <h2 class="text-2xl font-semibold mb-4">Camera Feed</h2>
+                    <div class="aspect-video bg-black rounded-lg overflow-hidden">
+                        <img id="camera-feed" src="https://via.placeholder.com/640x360" alt="Camera Feed" class="w-full h-full object-cover">
+                    </div>
+                    <div class="mt-4 flex justify-center space-x-4">
+                        <button class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg">Start Detection</button>
+                        <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Stop</button>
+                    </div>
+                </div>
+                
+                <!-- Grasp Results -->
+                <div class="bg-black bg-opacity-50 rounded-xl p-4">
+                    <h2 class="text-2xl font-semibold mb-4">Grasp Visualization</h2>
+                    <div class="aspect-video bg-black rounded-lg overflow-hidden">
+                        <img id="grasp-result" src="https://via.placeholder.com/640x360" alt="Grasp Result" class="w-full h-full object-cover">
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-gray-300">Detected grasps: <span id="grasp-count" class="font-semibold">0</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Controls Section -->
+            <div class="mt-8 bg-black bg-opacity-50 rounded-xl p-4">
+                <h2 class="text-2xl font-semibold mb-4">Grasp Controls</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block mb-2">Confidence Threshold</label>
+                        <input type="range" min="0" max="100" value="70" class="w-full" id="confidence-slider">
+                        <div class="flex justify-between text-sm mt-1">
+                            <span>0%</span>
+                            <span>50%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Grasp Type</label>
+                        <select class="w-full bg-gray-800 text-white p-2 rounded-lg">
+                            <option>Parallel Jaw</option>
+                            <option>Suction</option>
+                            <option>Multi-finger</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Visualization</label>
+                        <select class="w-full bg-gray-800 text-white p-2 rounded-lg">
+                            <option>Rectangle</option>
+                            <option>Heatmap</option>
+                            <option>3D Overlay</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Execute Grasp Section -->
+            <div class="mt-8 bg-black bg-opacity-50 rounded-xl p-4">
+                <h2 class="text-2xl font-semibold mb-4">Execute Grasp</h2>
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex-1">
+                        <p class="mb-4">Selected grasp: <span id="selected-grasp" class="font-semibold">None</span></p>
+                        <p class="mb-4">Success probability: <span id="grasp-probability" class="font-semibold">0%</span></p>
+                    </div>
+                    <div>
+                        <button class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg text-lg">Execute Grasp</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Log Section -->
+            <div class="mt-8 bg-black bg-opacity-50 rounded-xl p-4 h-48 overflow-y-auto">
+                <h2 class="text-2xl font-semibold mb-2">Logs</h2>
+                <div id="log-container" class="text-sm text-gray-300">
+                    <p>[System] Grasp detection module initialized</p>
+                    <p>[System] Waiting for camera input...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-gray-400">
+        © 2025 Humanoid Dashboard. All rights reserved.
+    </footer>
+
+    <script>
+        // Placeholder for actual functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Grasp Vision page loaded');
+            
+            // Simulate log entries
+            const logContainer = document.getElementById('log-container');
+            
+            function addLogEntry(message) {
+                const entry = document.createElement('p');
+                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                logContainer.appendChild(entry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+            
+            // Simulate some activity
+            setTimeout(() => addLogEntry('Camera connected'), 2000);
+            setTimeout(() => addLogEntry('Grasp detection model loaded'), 3500);
+            setTimeout(() => addLogEntry('Scanning for graspable objects...'), 5000);
+        });
+    </script>
+</body>
+
+</html>

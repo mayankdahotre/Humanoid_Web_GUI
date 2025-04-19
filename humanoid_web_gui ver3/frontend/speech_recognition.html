@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Recognition | Humanoid Robot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <style>
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://ik.imagekit.io/freeflo/production/dd5d55f9-1e87-4442-853d-3c6a6bbb4c67.png?tr=w-3840,q-75&alt=media&pr-true');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        .glass {
+            backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        nav a {
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #00bcd4;
+        }
+        
+        /* Dropdown Menu Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            min-width: 160px;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+            overflow: hidden;
+        }
+        
+        .dropdown-content a {
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-content a:hover {
+            background-color: rgba(0, 188, 212, 0.2);
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Speech Recognition Styles */
+        .recognition-result {
+            min-height: 100px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .pulse-animation {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .confidence-bar {
+            height: 10px;
+            background-color: rgba(0, 188, 212, 0.3);
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        .transcript-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .transcript-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="flex justify-between items-center px-8 py-4 glass sticky top-0 backdrop-blur-md z-10">
+        <h1 class="text-2xl font-bold">Perplex</h1>
+        <div class="space-x-6 text-lg">
+            <a href="dashboard2.html">Dashboard</a>
+            <div class="dropdown inline-block">
+                <a href="javascript:void(0)">Vision</a>
+                <div class="dropdown-content">
+                    <a href="vision_sam.html">SAM</a>
+                    <a href="vision_grasp.html">Grasp</a>
+                    <a href="vision_rviz.html">RViz</a>
+                </div>
+            </div>
+            <div class="dropdown inline-block">
+                <a href="javascript:void(0)">Speech</a>
+                <div class="dropdown-content">
+                    <a href="speech_recognition.html">Speech Recognition</a>
+                    <a href="text_to_speech.html">Text-to-Speech</a>
+                    <a href="speech_chatbot.html">AI Chatbot</a>
+                    <a href="voice_command.html">Voice Commands</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-16">
+        <div class="glass max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-8 text-center">Speech Recognition</h1>
+            
+            <div class="mb-8">
+                <p class="text-gray-300 mb-4 text-center">Test and configure the robot's speech recognition capabilities.</p>
+            </div>
+            
+            <!-- Recognition Interface -->
+            <div class="bg-black bg-opacity-50 rounded-xl p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4">Live Recognition</h2>
+                
+                <!-- Recognition Result -->
+                <div class="recognition-result mb-4" id="recognition-result">
+                    <p class="text-gray-400">Your speech will appear here...</p>
+                </div>
+                
+                <!-- Confidence Level -->
+                <div class="mb-4">
+                    <p class="mb-1">Confidence: <span id="confidence-level">0</span>%</p>
+                    <div class="confidence-bar" id="confidence-bar" style="width: 0%;"></div>
+                </div>
+                
+                <!-- Controls -->
+                <div class="flex justify-center space-x-4">
+                    <button class="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-3 rounded-lg" id="start-btn">
+                        Start Listening
+                    </button>
+                    <button class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg" id="stop-btn" disabled>
+                        Stop
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Recognition Settings -->
+            <div class="bg-black bg-opacity-50 rounded-xl p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4">Settings</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block mb-2">Language</label>
+                        <select class="w-full bg-gray-800 text-white p-2 rounded-lg" id="language-select">
+                            <option value="en-US">English (US)</option>
+                            <option value="en-GB">English (UK)</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                            <option value="ja-JP">Japanese</option>
+                            <option value="zh-CN">Chinese (Simplified)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Recognition Mode</label>
+                        <select class="w-full bg-gray-800 text-white p-2 rounded-lg" id="mode-select">
+                            <option value="continuous">Continuous</option>
+                            <option value="single">Single Phrase</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Minimum Confidence (%)</label>
+                        <input type="range" min="0" max="100" value="60" class="w-full" id="min-confidence">
+                        <div class="flex justify-between text-sm mt-1">
+                            <span>0%</span>
+                            <span>50%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Background Noise Filtering</label>
+                        <select class="w-full bg-gray-800 text-white p-2 rounded-lg" id="noise-filter">
+                            <option value="auto">Automatic</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Transcript History -->
+            <div class="bg-black bg-opacity-50 rounded-xl p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4">Transcript History</h2>
+                
+                <div class="h-48 overflow-y-auto" id="transcript-history">
+                    <p class="text-gray-400 text-center">No transcripts yet</p>
+                </div>
+                
+                <div class="mt-4 flex justify-end">
+                    <button class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg" id="clear-history">
+                        Clear History
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Log Section -->
+            <div class="bg-black bg-opacity-50 rounded-xl p-4 h-48 overflow-y-auto">
+                <h2 class="text-2xl font-semibold mb-2">Logs</h2>
+                <div id="log-container" class="text-sm text-gray-300">
+                    <p>[System] Speech recognition module initialized</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-gray-400">
+        © 2025 Humanoid Dashboard. All rights reserved.
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Speech Recognition page loaded');
+            
+            // DOM Elements
+            const recognitionResult = document.getElementById('recognition-result');
+            const confidenceLevel = document.getElementById('confidence-level');
+            const confidenceBar = document.getElementById('confidence-bar');
+            const startBtn = document.getElementById('start-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const languageSelect = document.getElementById('language-select');
+            const modeSelect = document.getElementById('mode-select');
+            const minConfidence = document.getElementById('min-confidence');
+            const noiseFilter = document.getElementById('noise-filter');
+            const transcriptHistory = document.getElementById('transcript-history');
+            const clearHistoryBtn = document.getElementById('clear-history');
+            const logContainer = document.getElementById('log-container');
+            
+            // Add log entry function
+            function addLogEntry(message) {
+                const entry = document.createElement('p');
+                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                logContainer.appendChild(entry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+            
+            // Add transcript to history
+            function addTranscript(text, confidence) {
+                // Remove "No transcripts yet" message if it exists
+                if (transcriptHistory.querySelector('.text-gray-400')) {
+                    transcriptHistory.innerHTML = '';
+                }
+                
+                const item = document.createElement('div');
+                item.className = 'transcript-item';
+                
+                const timestamp = document.createElement('div');
+                timestamp.className = 'text-xs text-gray-500';
+                timestamp.textContent = new Date().toLocaleTimeString();
+                
+                const content = document.createElement('div');
+                content.className = 'text-white';
+                content.textContent = text;
+                
+                const confidenceEl = document.createElement('div');
+                confidenceEl.className = 'text-xs text-gray-400';
+                confidenceEl.textContent = `Confidence: ${confidence}%`;
+                
+                item.appendChild(timestamp);
+                item.appendChild(content);
+                item.appendChild(confidenceEl);
+                
+                transcriptHistory.insertBefore(item, transcriptHistory.firstChild);
+            }
+            
+            // Speech Recognition functionality
+            let recognition;
+            let isListening = false;
+            
+            function setupSpeechRecognition() {
+                if (!('webkitSpeechRecognition' in window)) {
+                    addLogEntry('Speech recognition not supported in this browser');
+                    alert('Speech recognition is not supported in this browser.');
+                    startBtn.disabled = true;
+                    return;
+                }
+                
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = modeSelect.value === 'continuous';
+                recognition.interimResults = true;
+                recognition.lang = languageSelect.value;
+                
+                recognition.onstart = function() {
+                    isListening = true;
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                    recognitionResult.innerHTML = '<p class="pulse-animation">Listening...</p>';
+                    addLogEntry('Speech recognition started');
+                };
+                
+                recognition.onresult = function(event) {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+                    
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        const confidence = Math.round(event.results[i][0].confidence * 100);
+                        
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript;
+                            
+                            // Update confidence display
+                            confidenceLevel.textContent = confidence;
+                            confidenceBar.style.width = `${confidence}%`;
+                            
+                            // Add to history if confidence meets minimum
+                            if (confidence >= parseInt(minConfidence.value)) {
+                                addTranscript(transcript, confidence);
+                                addLogEntry(`Recognized: "${transcript}" (${confidence}%)`);
+                            } else {
+                                addLogEntry(`Rejected low confidence: "${transcript}" (${confidence}%)`);
+                            }
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+                    
+                    recognitionResult.innerHTML = `
+                        ${finalTranscript ? `<p class="text-white">${finalTranscript}</p>` : ''}
+                        ${interimTranscript ? `<p class="text-gray-400">${interimTranscript}</p>` : ''}
+                    `;
+                };
+                
+                recognition.onerror = function(event) {
+                    addLogEntry(`Error: ${event.error}`);
+                    stopRecognition();
+                };
+                
+                recognition.onend = function() {
+                    if (isListening && modeSelect.value === 'continuous') {
+                        // Restart if in continuous mode
+                        recognition.start();
+                        addLogEntry('Restarting continuous recognition');
+                    } else {
+                        stopRecognition();
+                    }
+                };
+            }
+            
+            function startRecognition() {
+                setupSpeechRecognition();
+                recognition.start();
+            }
+            
+            function stopRecognition() {
+                if (recognition) {
+                    recognition.stop();
+                }
+                isListening = false;
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                addLogEntry('Speech recognition stopped');
+            }
+            
+            // Event Listeners
+            startBtn.addEventListener('click', startRecognition);
+            stopBtn.addEventListener('click', stopRecognition);
+            
+            clearHistoryBtn.addEventListener('click', function() {
+                transcriptHistory.innerHTML = '<p class="text-gray-400 text-center">No transcripts yet</p>';
+                addLogEntry('Transcript history cleared');
+            });
+            
+            // Settings change handlers
+            languageSelect.addEventListener('change', function() {
+                addLogEntry(`Language changed to ${this.options[this.selectedIndex].text}`);
+                if (isListening) {
+                    stopRecognition();
+                    startRecognition();
+                }
+            });
+            
+            modeSelect.addEventListener('change', function() {
+                addLogEntry(`Recognition mode changed to ${this.value}`);
+                if (isListening) {
+                    stopRecognition();
+                    startRecognition();
+                }
+            });
+            
+            minConfidence.addEventListener('change', function() {
+                addLogEntry(`Minimum confidence threshold set to ${this.value}%`);
+            });
+            
+            noiseFilter.addEventListener('change', function() {
+                addLogEntry(`Noise filtering set to ${this.options[this.selectedIndex].text}`);
+            });
+            
+            // Simulate some activity
+            setTimeout(() => addLogEntry('Speech recognition engine ready'), 1500);
+            setTimeout(() => addLogEntry('Microphone access granted'), 2500);
+        });
+    </script>
+</body>
+
+</html>

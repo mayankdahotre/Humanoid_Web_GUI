@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Vision - Humanoid Robot Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://ik.imagekit.io/freeflo/production/dd5d55f9-1e87-4442-853d-3c6a6bbb4c67.png?tr=w-3840,q-75&alt=media&pr-true');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        .glass {
+            backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .control-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .vision-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .vision-container canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .button {
+            padding: 10px 20px;
+            background: rgba(0, 188, 212, 0.2);
+            border: 1px solid #00bcd4;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            background: rgba(0, 188, 212, 0.4);
+        }
+
+        .status-indicator {
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator.connected {
+            color: #4CAF50;
+        }
+
+        .status-indicator.disconnected {
+            color: #f44336;
+        }
+
+        .vision-settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .setting-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .setting-card h3 {
+            margin-bottom: 5px;
+            color: #00bcd4;
+        }
+
+        .vision-info {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .vision-stat {
+            padding: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vision-stat:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-weight: bold;
+            color: #00bcd4;
+        }
+
+        .stat-value {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .live-feed-sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
+            width: 50vw;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .live-feed-sidebar.expanded {
+            transform: translateX(0);
+        }
+
+        .live-feed-toggle {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background: rgba(0, 188, 212, 0.2);
+            border: 1px solid #00bcd4;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+
+        .live-feed-toggle:hover {
+            background: rgba(0, 188, 212, 0.4);
+        }
+
+        .live-feed-toggle.expanded {
+            right: calc(50vw + 20px);
+        }
+
+        .live-feed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .live-feed-video {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .live-feed-video video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .live-feed-controls {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .live-feed-controls button {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.9rem;
+        }
+
+        .main-content {
+            transition: all 0.3s ease;
+        }
+
+        .main-content.sidebar-expanded {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        .main-content.sidebar-expanded::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 999;
+        }
+
+        /* Remove responsive styles */
+        @media (max-width: 768px) {
+            .live-feed-sidebar {
+                width: 50vw;
+            }
+
+            .live-feed-toggle.expanded {
+                right: calc(50vw + 20px);
+            }
+
+            .main-content.sidebar-expanded {
+                filter: blur(5px);
+                pointer-events: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button id="liveFeedToggle" class="live-feed-toggle" title="Toggle Live Feed">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+            <line x1="7" y1="2" x2="7" y2="22"></line>
+            <line x1="17" y1="2" x2="17" y2="22"></line>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <line x1="2" y1="7" x2="7" y2="7"></line>
+            <line x1="2" y1="17" x2="7" y2="17"></line>
+            <line x1="17" y1="17" x2="22" y2="17"></line>
+            <line x1="17" y1="7" x2="22" y2="7"></line>
+        </svg>
+    </button>
+
+    <div id="liveFeedSidebar" class="live-feed-sidebar">
+        <div class="live-feed-header">
+            <h3 class="text-lg font-semibold">Live Feed</h3>
+            <button id="closeLiveFeed" class="text-gray-400 hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="live-feed-video">
+            <video id="liveFeed" autoplay muted></video>
+        </div>
+        <div class="live-feed-controls">
+            <button id="startLiveFeed" class="button">Start</button>
+            <button id="stopLiveFeed" class="button">Stop</button>
+        </div>
+    </div>
+
+    <div id="mainContent" class="main-content">
+        <nav class="flex justify-between items-center px-8 py-4 glass sticky top-0 backdrop-blur-md z-10">
+            <h1 class="text-2xl font-bold">Perplex</h1>
+            <div class="space-x-6 text-lg">
+                <a href="dashboard2.html" class="text-white hover:text-cyan-400">Dashboard</a>
+            </div>
+        </nav>
+
+        <div class="container mx-auto px-8 py-8">
+            <div class="glass">
+                <h1 class="text-4xl font-bold mb-6">Live Vision</h1>
+                
+                <div class="status-indicator disconnected" id="rosStatus">ROS Bridge Disconnected</div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="control-panel">
+                        <h2 class="text-2xl font-semibold mb-4">Vision View</h2>
+                        
+                        <div class="vision-container">
+                            <canvas id="visionCanvas"></canvas>
+                        </div>
+                        
+                        <div class="mt-4 flex justify-center space-x-4">
+                            <button id="connectROS" class="button">Connect to ROS</button>
+                            <button id="startVision" class="button">Start Vision</button>
+                            <button id="stopVision" class="button">Stop Vision</button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-panel">
+                        <h2 class="text-2xl font-semibold mb-4">Vision Settings</h2>
+                        
+                        <div class="vision-settings">
+                            <div class="setting-card">
+                                <h3>Camera</h3>
+                                <select id="camera" class="w-full bg-gray-800 bg-opacity-50 text-white p-2 rounded-lg">
+                                    <option value="rgb">RGB</option>
+                                    <option value="depth">Depth</option>
+                                    <option value="ir">Infrared</option>
+                                </select>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <h3>Resolution</h3>
+                                <select id="resolution" class="w-full bg-gray-800 bg-opacity-50 text-white p-2 rounded-lg">
+                                    <option value="high">High (1920x1080)</option>
+                                    <option value="medium">Medium (1280x720)</option>
+                                    <option value="low">Low (640x480)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <h3>Frame Rate</h3>
+                                <select id="frameRate" class="w-full bg-gray-800 bg-opacity-50 text-white p-2 rounded-lg">
+                                    <option value="30">30 FPS</option>
+                                    <option value="15">15 FPS</option>
+                                    <option value="5">5 FPS</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h3 class="text-lg font-semibold mb-2">Vision Statistics</h3>
+                            <div class="vision-info" id="visionInfo">
+                                <div class="vision-stat">
+                                    <span class="stat-label">Frame Rate</span>
+                                    <span class="stat-value" id="currentFrameRate">0 FPS</span>
+                                </div>
+                                <div class="vision-stat">
+                                    <span class="stat-label">Latency</span>
+                                    <span class="stat-value" id="latency">0 ms</span>
+                                </div>
+                                <div class="vision-stat">
+                                    <span class="stat-label">Resolution</span>
+                                    <span class="stat-value" id="currentResolution">0x0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ros = null;
+        let cameraTopic = null;
+        let canvas = null;
+        let ctx = null;
+        let frameCount = 0;
+        let lastFrameTime = 0;
+        let frameTimes = [];
+        
+        function connectToROS() {
+            ros = new ROSLIB.Ros({
+                url: 'ws://localhost:9090'
+            });
+
+            ros.on('connection', () => {
+                document.getElementById('rosStatus').textContent = 'ROS Bridge Connected';
+                document.getElementById('rosStatus').classList.remove('disconnected');
+                document.getElementById('rosStatus').classList.add('connected');
+                setupTopics();
+            });
+
+            ros.on('error', (error) => {
+                document.getElementById('rosStatus').textContent = 'ROS Bridge Error';
+                document.getElementById('rosStatus').classList.remove('connected');
+                document.getElementById('rosStatus').classList.add('disconnected');
+            });
+
+            ros.on('close', () => {
+                document.getElementById('rosStatus').textContent = 'ROS Bridge Disconnected';
+                document.getElementById('rosStatus').classList.remove('connected');
+                document.getElementById('rosStatus').classList.add('disconnected');
+            });
+        }
+        
+        function setupTopics() {
+            cameraTopic = new ROSLIB.Topic({
+                ros: ros,
+                name: '/camera/image_raw',
+                messageType: 'sensor_msgs/Image'
+            });
+        }
+        
+        function setupCanvas() {
+            canvas = document.getElementById('visionCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size to match container
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+            });
+        }
+        
+        function updateFrameStats() {
+            const now = performance.now();
+            const frameTime = now - lastFrameTime;
+            lastFrameTime = now;
+            
+            frameTimes.push(frameTime);
+            if (frameTimes.length > 10) {
+                frameTimes.shift();
+            }
+            
+            const avgFrameTime = frameTimes.reduce((a, b) => a + b) / frameTimes.length;
+            const fps = 1000 / avgFrameTime;
+            
+            document.getElementById('currentFrameRate').textContent = `${fps.toFixed(1)} FPS`;
+            document.getElementById('latency').textContent = `${frameTime.toFixed(1)} ms`;
+            document.getElementById('currentResolution').textContent = `${canvas.width}x${canvas.height}`;
+        }
+        
+        // Initialize canvas
+        setupCanvas();
+        
+        // Event listeners
+        document.getElementById('connectROS').addEventListener('click', connectToROS);
+        
+        document.getElementById('startVision').addEventListener('click', () => {
+            if (ros && cameraTopic) {
+                cameraTopic.subscribe((message) => {
+                    const blob = new Blob([message.data], { type: 'image/jpeg' });
+                    const url = URL.createObjectURL(blob);
+                    const img = new Image();
+                    img.onload = () => {
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        updateFrameStats();
+                    };
+                    img.src = url;
+                });
+            }
+        });
+        
+        document.getElementById('stopVision').addEventListener('click', () => {
+            if (cameraTopic) {
+                cameraTopic.unsubscribe();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                frameCount = 0;
+                frameTimes = [];
+                lastFrameTime = 0;
+                document.getElementById('currentFrameRate').textContent = '0 FPS';
+                document.getElementById('latency').textContent = '0 ms';
+            }
+        });
+        
+        document.getElementById('camera').addEventListener('change', (e) => {
+            if (cameraTopic) {
+                cameraTopic.unsubscribe();
+                cameraTopic.name = `/camera/${e.target.value}/image_raw`;
+                if (ros && ros.isConnected) {
+                    cameraTopic.subscribe((message) => {
+                        const blob = new Blob([message.data], { type: 'image/jpeg' });
+                        const url = URL.createObjectURL(blob);
+                        const img = new Image();
+                        img.onload = () => {
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            updateFrameStats();
+                        };
+                        img.src = url;
+                    });
+                }
+            }
+        });
+        
+        document.getElementById('resolution').addEventListener('change', (e) => {
+            const resolutions = {
+                high: { width: 1920, height: 1080 },
+                medium: { width: 1280, height: 720 },
+                low: { width: 640, height: 480 }
+            };
+            
+            const resolution = resolutions[e.target.value];
+            canvas.width = resolution.width;
+            canvas.height = resolution.height;
+            document.getElementById('currentResolution').textContent = `${resolution.width}x${resolution.height}`;
+        });
+        
+        document.getElementById('frameRate').addEventListener('change', (e) => {
+            // Update frame rate setting
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (ros) {
+                ros.close();
+            }
+        });
+
+        // Live feed sidebar functionality
+        const liveFeedToggle = document.getElementById('liveFeedToggle');
+        const liveFeedSidebar = document.getElementById('liveFeedSidebar');
+        const mainContent = document.getElementById('mainContent');
+        const closeLiveFeed = document.getElementById('closeLiveFeed');
+        const startLiveFeed = document.getElementById('startLiveFeed');
+        const stopLiveFeed = document.getElementById('stopLiveFeed');
+
+        function toggleLiveFeed() {
+            liveFeedSidebar.classList.toggle('expanded');
+            liveFeedToggle.classList.toggle('expanded');
+            mainContent.classList.toggle('sidebar-expanded');
+        }
+
+        liveFeedToggle.addEventListener('click', toggleLiveFeed);
+        closeLiveFeed.addEventListener('click', toggleLiveFeed);
+
+        startLiveFeed.addEventListener('click', () => {
+            if (ros && cameraTopic) {
+                cameraTopic.subscribe((message) => {
+                    const blob = new Blob([message.data], { type: 'image/jpeg' });
+                    const url = URL.createObjectURL(blob);
+                    liveFeed.src = url;
+                });
+            }
+        });
+
+        stopLiveFeed.addEventListener('click', () => {
+            if (cameraTopic) {
+                cameraTopic.unsubscribe();
+                liveFeed.src = '';
+            }
+        });
+    </script>
+</body>
+</html> 

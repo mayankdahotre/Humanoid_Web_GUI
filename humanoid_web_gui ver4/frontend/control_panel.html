@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Panel - Humanoid Robot Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://ik.imagekit.io/freeflo/production/dd5d55f9-1e87-4442-853d-3c6a6bbb4c67.png?tr=w-3840,q-75&alt=media&pr-true');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        .glass {
+            backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .control-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .joint-control {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #00bcd4;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .button {
+            padding: 10px 20px;
+            background: rgba(0, 188, 212, 0.2);
+            border: 1px solid #00bcd4;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            background: rgba(0, 188, 212, 0.4);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-indicator {
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator.connected {
+            color: #4CAF50;
+        }
+
+        .status-indicator.disconnected {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <nav class="flex justify-between items-center px-8 py-4 glass sticky top-0 backdrop-blur-md z-10">
+        <h1 class="text-2xl font-bold">Perplex</h1>
+        <div class="space-x-6 text-lg">
+            <a href="../dashboard2.html" class="text-white hover:text-cyan-400">Back to Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-8 py-8">
+        <div class="glass">
+            <h1 class="text-4xl font-bold mb-6">Control Panel</h1>
+            
+            <div class="status-indicator disconnected" id="rosStatus">ROS Bridge Disconnected</div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="control-panel">
+                    <h2 class="text-2xl font-semibold mb-4">Joint Controls</h2>
+                    
+                    <div id="jointControls">
+                        <!-- Joint controls will be dynamically added here -->
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button id="connectROS" class="button">Connect to ROS</button>
+                        <button id="resetJoints" class="button">Reset Joints</button>
+                    </div>
+                </div>
+                
+                <div class="control-panel">
+                    <h2 class="text-2xl font-semibold mb-4">Motion Planning</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block mb-2">Motion Type</label>
+                            <select id="motionType" class="w-full bg-gray-800 bg-opacity-50 text-white p-2 rounded-lg">
+                                <option value="predefined">Predefined Motion</option>
+                                <option value="custom">Custom Motion</option>
+                            </select>
+                        </div>
+                        
+                        <div id="predefinedMotions" class="space-y-2">
+                            <button class="button w-full" data-motion="wave">Wave</button>
+                            <button class="button w-full" data-motion="walk">Walk</button>
+                            <button class="button w-full" data-motion="dance">Dance</button>
+                        </div>
+                        
+                        <div id="customMotion" class="hidden">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block mb-2">Duration (seconds)</label>
+                                    <input type="number" id="motionDuration" min="1" max="10" value="2" class="w-full bg-gray-800 bg-opacity-50 text-white p-2 rounded-lg">
+                                </div>
+                                
+                                <div>
+                                    <label class="block mb-2">Trajectory Points</label>
+                                    <textarea id="trajectoryPoints" rows="4" class="w-full bg-gray-800 bg-opacity-50 text-white p-2 rounded-lg" placeholder="Enter joint angles in JSON format"></textarea>
+                                </div>
+                                
+                                <button id="executeMotion" class="button w-full">Execute Motion</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ros = null;
+        let jointStateTopic = null;
+        let jointCommandTopic = null;
+        let motionCommandTopic = null;
+        
+        const jointNames = [
+            'head_pan', 'head_tilt',
+            'shoulder_left', 'elbow_left', 'wrist_left',
+            'shoulder_right', 'elbow_right', 'wrist_right',
+            'hip_left', 'knee_left', 'ankle_left',
+            'hip_right', 'knee_right', 'ankle_right'
+        ];
+        
+        const jointLimits = {
+            min: -90,
+            max: 90
+        };
+        
+        function connectToROS() {
+            ros = new ROSLIB.Ros({
+                url: 'ws://localhost:9090'
+            });
+
+            ros.on('connection', () => {
+                document.getElementById('rosStatus').textContent = 'ROS Bridge Connected';
+                document.getElementById('rosStatus').classList.remove('disconnected');
+                document.getElementById('rosStatus').classList.add('connected');
+                setupTopics();
+            });
+
+            ros.on('error', (error) => {
+                document.getElementById('rosStatus').textContent = 'ROS Bridge Error';
+                document.getElementById('rosStatus').classList.remove('connected');
+                document.getElementById('rosStatus').classList.add('disconnected');
+            });
+
+            ros.on('close', () => {
+                document.getElementById('rosStatus').textContent = 'ROS Bridge Disconnected';
+                document.getElementById('rosStatus').classList.remove('connected');
+                document.getElementById('rosStatus').classList.add('disconnected');
+            });
+        }
+        
+        function setupTopics() {
+            // Joint state subscriber
+            jointStateTopic = new ROSLIB.Topic({
+                ros: ros,
+                name: '/joint_states',
+                messageType: 'sensor_msgs/JointState'
+            });
+            
+            jointStateTopic.subscribe((message) => {
+                updateJointValues(message);
+            });
+            
+            // Joint command publisher
+            jointCommandTopic = new ROSLIB.Topic({
+                ros: ros,
+                name: '/joint_commands',
+                messageType: 'sensor_msgs/JointState'
+            });
+            
+            // Motion command publisher
+            motionCommandTopic = new ROSLIB.Topic({
+                ros: ros,
+                name: '/motion_commands',
+                messageType: 'std_msgs/String'
+            });
+        }
+        
+        function createJointControls() {
+            const container = document.getElementById('jointControls');
+            jointNames.forEach(jointName => {
+                const control = document.createElement('div');
+                control.className = 'joint-control';
+                control.innerHTML = `
+                    <div class="flex justify-between mb-2">
+                        <label>${jointName}</label>
+                        <span class="joint-value">0°</span>
+                    </div>
+                    <input type="range" class="slider" min="${jointLimits.min}" max="${jointLimits.max}" value="0"
+                           data-joint="${jointName}">
+                `;
+                container.appendChild(control);
+            });
+        }
+        
+        function updateJointValues(message) {
+            jointNames.forEach((jointName, index) => {
+                const value = message.position[index];
+                const slider = document.querySelector(`input[data-joint="${jointName}"]`);
+                const valueDisplay = slider.parentElement.querySelector('.joint-value');
+                
+                if (slider && valueDisplay) {
+                    slider.value = value * (180 / Math.PI); // Convert radians to degrees
+                    valueDisplay.textContent = `${Math.round(value * (180 / Math.PI))}°`;
+                }
+            });
+        }
+        
+        function sendJointCommand(jointName, value) {
+            if (!ros || !jointCommandTopic) return;
+            
+            const message = new ROSLIB.Message({
+                name: [jointName],
+                position: [value * (Math.PI / 180)] // Convert degrees to radians
+            });
+            
+            jointCommandTopic.publish(message);
+        }
+        
+        function sendMotionCommand(motionType, data) {
+            if (!ros || !motionCommandTopic) return;
+            
+            const message = new ROSLIB.Message({
+                data: JSON.stringify({
+                    type: motionType,
+                    data: data
+                })
+            });
+            
+            motionCommandTopic.publish(message);
+        }
+        
+        // Initialize joint controls
+        createJointControls();
+        
+        // Event listeners
+        document.getElementById('connectROS').addEventListener('click', connectToROS);
+        
+        document.getElementById('resetJoints').addEventListener('click', () => {
+            jointNames.forEach(jointName => {
+                const slider = document.querySelector(`input[data-joint="${jointName}"]`);
+                if (slider) {
+                    slider.value = 0;
+                    sendJointCommand(jointName, 0);
+                }
+            });
+        });
+        
+        document.querySelectorAll('.slider').forEach(slider => {
+            slider.addEventListener('input', (e) => {
+                const jointName = e.target.dataset.joint;
+                const value = parseFloat(e.target.value);
+                sendJointCommand(jointName, value);
+            });
+        });
+        
+        document.getElementById('motionType').addEventListener('change', (e) => {
+            const predefinedMotions = document.getElementById('predefinedMotions');
+            const customMotion = document.getElementById('customMotion');
+            
+            if (e.target.value === 'predefined') {
+                predefinedMotions.classList.remove('hidden');
+                customMotion.classList.add('hidden');
+            } else {
+                predefinedMotions.classList.add('hidden');
+                customMotion.classList.remove('hidden');
+            }
+        });
+        
+        document.querySelectorAll('#predefinedMotions button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const motion = e.target.dataset.motion;
+                sendMotionCommand('predefined', { motion: motion });
+            });
+        });
+        
+        document.getElementById('executeMotion').addEventListener('click', () => {
+            try {
+                const duration = parseFloat(document.getElementById('motionDuration').value);
+                const points = JSON.parse(document.getElementById('trajectoryPoints').value);
+                
+                sendMotionCommand('custom', {
+                    duration: duration,
+                    points: points
+                });
+            } catch (error) {
+                console.error('Invalid trajectory data:', error);
+            }
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (ros) {
+                ros.close();
+            }
+        });
+    </script>
+</body>
+</html> 

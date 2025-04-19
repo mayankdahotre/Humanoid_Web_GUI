@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Commands | Humanoid Robot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <style>
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://ik.imagekit.io/freeflo/production/dd5d55f9-1e87-4442-853d-3c6a6bbb4c67.png?tr=w-3840,q-75&alt=media&pr-true');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        .glass {
+            backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        nav a {
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #00bcd4;
+        }
+        
+        /* Dropdown Menu Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            min-width: 160px;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+            overflow: hidden;
+        }
+        
+        .dropdown-content a {
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-content a:hover {
+            background-color: rgba(0, 188, 212, 0.2);
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Voice Command Styles */
+        .command-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .command-card:hover {
+            background: rgba(0, 0, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .pulse-animation {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-active {
+            background-color: #10b981;
+        }
+
+        .status-inactive {
+            background-color: #6b7280;
+        }
+
+        .status-error {
+            background-color: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="flex justify-between items-center px-8 py-4 glass sticky top-0 backdrop-blur-md z-10">
+        <h1 class="text-2xl font-bold">Perplex</h1>
+        <div class="space-x-6 text-lg">
+            <a href="dashboard2.html">Dashboard</a>
+            <div class="dropdown inline-block">
+                <a href="javascript:void(0)">Vision</a>
+                <div class="dropdown-content">
+                    <a href="vision_sam.html">SAM</a>
+                    <a href="vision_grasp.html">Grasp</a>
+                    <a href="vision_rviz.html">RViz</a>
+                </div>
+            </div>
+            <div class="dropdown inline-block">
+                <a href="javascript:void(0)">Speech</a>
+                <div class="dropdown-content">
+                    <a href="speech_recognition.html">Speech Recognition</a>
+                    <a href="text_to_speech.html">Text-to-Speech</a>
+                    <a href="speech_chatbot.html">AI Chatbot</a>
+                    <a href="voice_command.html">Voice Commands</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-16">
+        <div class="glass max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-8 text-center">Voice Commands</h1>
+            
+            <div class="mb-8">
+                <p class="text-gray-300 mb-4 text-center">Configure and test voice commands for controlling the robot.</p>
+            </div>
+            
+            <!-- Voice Command Status -->
+            <div class="bg-black bg-opacity-50 rounded-xl p-6 mb-8">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold">Voice Command System</h2>
+                    <div class="flex items-center">
+                        <span class="status-indicator status-active" id="status-indicator"></span>
+                        <span id="status-text">Active</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex justify-center">
+                    <button class="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-3 rounded-lg mr-4" id="listen-btn">
+                        Start Listening
+                    </button>
+                    <button class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg" id="stop-btn" disabled>
+                        Stop Listening
+                    </button>
+                </div>
+                
+                <div class="mt-6 text-center" id="listening-indicator">
+                    <!-- Will show when listening -->
+                </div>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-2">Last Recognized Command:</h3>
+                    <div class="bg-gray-800 bg-opacity-50 p-3 rounded-lg" id="last-command">
+                        <p class="text-gray-400">No commands recognized yet</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Available Commands -->
+            <div class="bg-black bg-opacity-50 rounded-xl p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4">Available Commands</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Movement Commands -->
+                    <div class="command-card">
+                        <h3 class="text-lg font-semibold mb-2 text-cyan-400">Movement</h3>
+                        <ul class="space-y-1 text-gray-300">
+                            <li>"Move forward"</li>
+                            <li>"Move backward"</li>
+                            <li>"Turn left"</li>
+                            <li>"Turn right"</li>
+                            <li>"Stop moving"</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Arm Commands -->
+                    <div class="command-card">
+                        <h3 class="text-lg font-semibold mb-2 text-green-400">Arms</h3>
+                        <ul class="space-y-1 text-gray-300">
+                            <li>"Raise left arm"</li>
+                            <li>"Lower right arm"</li>
+                            <li>"Open gripper"</li>
+                            <li>"Close gripper"</li>
+                            <li>"Reset arm position"</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Head Commands -->
+                    <div class="command-card">
+                        <h3 class="text-lg font-semibold mb-2 text-yellow-400">Head</h3>
+                        <ul class="space-y-1 text-gray-300">
+                            <li>"Look up"</li>
+                            <li>"Look down"</li>
+                            <li>"Look left"</li>
+                            <li>"Look right"</li>
+                            <li>"Center head"</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- System Commands -->
+                    <div class="command-card">
+                        <h3 class="text-lg font-semibold mb-2 text-red-400">System</h3>
+                        <ul class="space-y-1 text-gray-300">
+                            <li>"Emergency stop"</li>
+                            <li>"Start recording"</li>
+                            <li>"Stop recording"</li>
+                            <li>"Take a photo"</li>
+                            <li>"Power off"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Custom Commands -->
+            <div class="bg-black bg-opacity-50 rounded-xl p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4">Custom Commands</h2>
+                
+                <div class="mb-4">
+                    <div class="flex gap-4 mb-4">
+                        <div class="flex-1">
+                            <label class="block mb-2">Command Phrase</label>
+                            <input type="text" class="w-full bg-gray-800 text-white p-2 rounded-lg" id="command-phrase" placeholder="e.g., 'Wave hello'">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block mb-2">Action</label>
+                            <select class="w-full bg-gray-800 text-white p-2 rounded-lg" id="command-action">
+                                <option value="">Select an action</option>
+                                <option value="movement">Movement Sequence</option>
+                                <option value="speech">Speak Response</option>
+                                <option value="function">Run Function</option>
+                                <option value="custom">Custom Script</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block mb-2">Action Parameters</label>
+                        <textarea class="w-full bg-gray-800 text-white p-2 rounded-lg" id="command-params" placeholder="Enter parameters for the selected action" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg" id="add-command-btn">
+                            Add Command
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-2">Your Custom Commands</h3>
+                    <div class="bg-gray-800 bg-opacity-50 rounded-lg overflow-hidden">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="bg-gray-700 bg-opacity-50">
+                                    <th class="py-2 px-4 text-left">Command</th>
+                                    <th class="py-2 px-4 text-left">Action</th>
+                                    <th class="py-2 px-4 text-left">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="custom-commands-table">
+                                <tr>
+                                    <td colspan="3" class="py-4 px-4 text-center text-gray-400">No custom commands added yet</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Log Section -->
+            <div class="bg-black bg-opacity-50 rounded-xl p-4 h-48 overflow-y-auto">
+                <h2 class="text-2xl font-semibold mb-2">Logs</h2>
+                <div id="log-container" class="text-sm text-gray-300">
+                    <p>[System] Voice command module initialized</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-gray-400">
+        © 2025 Humanoid Dashboard. All rights reserved.
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Voice Commands page loaded');
+            
+            // DOM Elements
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            const listenBtn = document.getElementById('listen-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const listeningIndicator = document.getElementById('listening-indicator');
+            const lastCommand = document.getElementById('last-command');
+            const commandPhrase = document.getElementById('command-phrase');
+            const commandAction = document.getElementById('command-action');
+            const commandParams = document.getElementById('command-params');
+            const addCommandBtn = document.getElementById('add-command-btn');
+            const customCommandsTable = document.getElementById('custom-commands-table');
+            const logContainer = document.getElementById('log-container');
+            
+            // Add log entry function
+            function addLogEntry(message) {
+                const entry = document.createElement('p');
+                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                logContainer.appendChild(entry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+            
+            // Set status function
+            function setStatus(status) {
+                statusIndicator.className = `status-indicator status-${status}`;
+                
+                if (status === 'active') {
+                    statusText.textContent = 'Active';
+                    listenBtn.disabled = true;
+                    stopBtn.disabled = false;
+                } else if (status === 'inactive') {
+                    statusText.textContent = 'Inactive';
+                    listenBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    listeningIndicator.innerHTML = '';
+                } else if (status === 'error') {
+                    statusText.textContent = 'Error';
+                    listenBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    listeningIndicator.innerHTML = '';
+                }
+            }
+            
+            // Check if browser supports speech recognition
+            let recognition;
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+                
+                recognition.onstart = function() {
+                    setStatus('active');
+                    listeningIndicator.innerHTML = '<p class="pulse-animation text-cyan-400">Listening for commands...</p>';
+                    addLogEntry('Voice command recognition started');
+                };
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+                    const confidence = Math.round(event.results[event.results.length - 1][0].confidence * 100);
+                    
+                    lastCommand.innerHTML = `
+                        <p class="text-white">"${transcript}"</p>
+                        <p class="text-sm text-gray-400">Confidence: ${confidence}%</p>
+                    `;
+                    
+                    addLogEntry(`Command recognized: "${transcript}" (${confidence}%)`);
+                    
+                    // Process command
+                    processCommand(transcript);
+                };
+                
+                recognition.onerror = function(event) {
+                    addLogEntry(`Error: ${event.error}`);
+                    setStatus('error');
+                };
+                
+                recognition.onend = function() {
+                    if (statusText.textContent === 'Active') {
+                        // Restart if it was active (sometimes recognition stops on its own)
+                        recognition.start();
+                        addLogEntry('Restarting voice command recognition');
+                    } else {
+                        setStatus('inactive');
+                        addLogEntry('Voice command recognition stopped');
+                    }
+                };
+            } else {
+                addLogEntry('Speech recognition not supported in this browser');
+                alert('Speech recognition is not supported in this browser.');
+                listenBtn.disabled = true;
+            }
+            
+            // Process command function
+            function processCommand(command) {
+                // Check built-in commands
+                if (command.includes('move forward')) {
+                    simulateAction('Moving forward');
+                } else if (command.includes('move backward')) {
+                    simulateAction('Moving backward');
+                } else if (command.includes('turn left')) {
+                    simulateAction('Turning left');
+                } else if (command.includes('turn right')) {
+                    simulateAction('Turning right');
+                } else if (command.includes('stop moving')) {
+                    simulateAction('Stopping movement');
+                } else if (command.includes('raise left arm')) {
+                    simulateAction('Raising left arm');
+                } else if (command.includes('lower right arm')) {
+                    simulateAction('Lowering right arm');
+                } else if (command.includes('open gripper')) {
+                    simulateAction('Opening gripper');
+                } else if (command.includes('close gripper')) {
+                    simulateAction('Closing gripper');
+                } else if (command.includes('reset arm')) {
+                    simulateAction('Resetting arm position');
+                } else if (command.includes('look up')) {
+                    simulateAction('Looking up');
+                } else if (command.includes('look down')) {
+                    simulateAction('Looking down');
+                } else if (command.includes('look left')) {
+                    simulateAction('Looking left');
+                } else if (command.includes('look right')) {
+                    simulateAction('Looking right');
+                } else if (command.includes('center head')) {
+                    simulateAction('Centering head');
+                } else if (command.includes('emergency stop')) {
+                    simulateAction('EMERGENCY STOP ACTIVATED', 'error');
+                } else if (command.includes('start recording')) {
+                    simulateAction('Starting recording');
+                } else if (command.includes('stop recording')) {
+                    simulateAction('Stopping recording');
+                } else if (command.includes('take a photo')) {
+                    simulateAction('Taking photo');
+                } else if (command.includes('power off')) {
+                    simulateAction('Initiating power off sequence');
+                } else {
+                    // Check custom commands
+                    checkCustomCommands(command);
+                }
+            }
+            
+            // Simulate action function (in a real app, this would trigger actual robot actions)
+            function simulateAction(action, type = 'info') {
+                addLogEntry(`Executing: ${action}`);
+                
+                // Create a notification
+                const notification = document.createElement('div');
+                notification.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 ${type === 'error' ? 'bg-red-600' : 'bg-cyan-600'}`;
+                notification.textContent = action;
+                document.body.appendChild(notification);
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+            
+            // Check custom commands
+            function checkCustomCommands(command) {
+                // In a real app, this would check against stored custom commands
+                // For now, just log that no matching command was found
+                addLogEntry(`No matching command found for: "${command}"`);
+            }
+            
+            // Add custom command
+            function addCustomCommand() {
+                const phrase = commandPhrase.value.trim();
+                const action = commandAction.value;
+                const params = commandParams.value.trim();
+                
+                if (!phrase || !action) {
+                    alert('Please enter both a command phrase and select an action.');
+                    return;
+                }
+                
+                // Clear "No custom commands" row if it exists
+                if (customCommandsTable.querySelector('td[colspan="3"]')) {
+                    customCommandsTable.innerHTML = '';
+                }
+                
+                // Create new row
+                const row = document.createElement('tr');
+                row.className = 'border-t border-gray-700';
+                
+                const phraseCell = document.createElement('td');
+                phraseCell.className = 'py-2 px-4';
+                phraseCell.textContent = phrase;
+                
+                const actionCell = document.createElement('td');
+                actionCell.className = 'py-2 px-4';
+                actionCell.textContent = document.querySelector(`#command-action option[value="${action}"]`).textContent;
+                
+                const controlsCell = document.createElement('td');
+                controlsCell.className = 'py-2 px-4';
+                
+                const editBtn = document.createElement('button');
+                editBtn.className = 'bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-sm mr-2';
+                editBtn.textContent = 'Edit';
+                editBtn.addEventListener('click', () => {
+                    commandPhrase.value = phrase;
+                    commandAction.value = action;
+                    commandParams.value = params;
+                    row.remove();
+                    
+                    // If no commands left, show message
+                    if (customCommandsTable.children.length === 0) {
+                        customCommandsTable.innerHTML = '<tr><td colspan="3" class="py-4 px-4 text-center text-gray-400">No custom commands added yet</td></tr>';
+                    }
+                });
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm';
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.addEventListener('click', () => {
+                    row.remove();
+                    addLogEntry(`Custom command removed: "${phrase}"`);
+                    
+                    // If no commands left, show message
+                    if (customCommandsTable.children.length === 0) {
+                        customCommandsTable.innerHTML = '<tr><td colspan="3" class="py-4 px-4 text-center text-gray-400">No custom commands added yet</td></tr>';
+                    }
+                });
+                
+                controlsCell.appendChild(editBtn);
+                controlsCell.appendChild(deleteBtn);
+                
+                row.appendChild(phraseCell);
+                row.appendChild(actionCell);
+                row.appendChild(controlsCell);
+                
+                customCommandsTable.appendChild(row);
+                
+                // Store params as a data attribute (in a real app, would be stored in a database)
+                row.dataset.params = params;
+                
+                // Clear form
+                commandPhrase.value = '';
+                commandAction.value = '';
+                commandParams.value = '';
+                
+                addLogEntry(`Custom command added: "${phrase}"`);
+            }
+            
+            // Event Listeners
+            listenBtn.addEventListener('click', function() {
+                if (recognition) {
+                    recognition.start();
+                }
+            });
+            
+            stopBtn.addEventListener('click', function() {
+                if (recognition) {
+                    recognition.stop();
+                    setStatus('inactive');
+                }
+            });
+            
+            addCommandBtn.addEventListener('click', addCustomCommand);
+            
+            // Action type change handler
+            commandAction.addEventListener('change', function() {
+                let placeholder = '';
+                
+                switch (this.value) {
+                    case 'movement':
+                        placeholder = 'Enter movement sequence (e.g., "forward 2s, turn_left 1s, forward 3s")';
+                        break;
+                    case 'speech':
+                        placeholder = 'Enter text for the robot to speak';
+                        break;
+                    case 'function':
+                        placeholder = 'Enter function name (e.g., "wave_hand", "take_photo")';
+                        break;
+                    case 'custom':
+                        placeholder = 'Enter custom script or parameters';
+                        break;
+                    default:
+                        placeholder = 'Enter parameters for the selected action';
+                }
+                
+                commandParams.placeholder = placeholder;
+            });
+            
+            // Simulate some activity
+            setTimeout(() => addLogEntry('Voice command system ready'), 1500);
+            setTimeout(() => addLogEntry('14 built-in commands loaded'), 2500);
+            setTimeout(() => addLogEntry('Waiting for activation'), 3500);
+        });
+    </script>
+</body>
+
+</html>

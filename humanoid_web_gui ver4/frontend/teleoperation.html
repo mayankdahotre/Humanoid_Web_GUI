@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleoperation - Humanoid Robot Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://ik.imagekit.io/freeflo/production/dd5d55f9-1e87-4442-853d-3c6a6bbb4c67.png?tr=w-3840,q-75&alt=media&pr-true');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        .glass {
+            backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .control-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .joystick-container {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .button {
+            padding: 10px 20px;
+            background: rgba(0, 188, 212, 0.2);
+            border: 1px solid #00bcd4;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            background: rgba(0, 188, 212, 0.4);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-indicator {
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator.connected {
+            color: #4CAF50;
+        }
+
+        .status-indicator.disconnected {
+            color: #f44336;
+        }
+
+        .telemetry {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .telemetry-value {
+            font-family: monospace;
+            color: #00bcd4;
+        }
+    </style>
+</head>
+<body>
+    <nav class="flex justify-between items-center px-8 py-4 glass sticky top-0 backdrop-blur-md z-10">
+        <h1 class="text-2xl font-bold">Perplex</h1>
+        <div class="space-x-6 text-lg">
+            <a href="../dashboard2.html" class="text-white hover:text-cyan-400">Back to Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-8 py-8">
+        <div class="glass">
+            <h1 class="text-4xl font-bold mb-6">Teleoperation</h1>
+            
+            <div class="status-indicator disconnected" id="rosStatus">ROS Bridge Disconnected</div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="control-panel">
+                    <h2 class="text-2xl font-semibold mb-4">Navigation Controls</h2>
+                    
+                    <div class="joystick-container" id="joystick"></div>
+                    
+                    <div class="mt-4 flex justify-center space-x-4">
+                        <button id="connectROS" class="button">Connect to ROS</button>
+                        <button id="emergencyStop" class="button bg-red-500 border-red-500">Emergency Stop</button>
+                    </div>
+                </div>
+                
+                <div class="control-panel">
+                    <h2 class="text-2xl font-semibold mb-4">Telemetry</h2>
+                    
+                    <div class="space-y-2">
+                        <div class="telemetry">
+                            <label>Linear Velocity:</label>
+                            <span class="telemetry-value" id="linearVelocity">0.00 m/s</span>
+                        </div>
+                        
+                        <div class="telemetry">
+                            <label>Angular Velocity:</label>
+                            <span class="telemetry-value" id="angularVelocity">0.00 rad/s</span>
+                        </div>
+                        
+                        <div class="telemetry">
+                            <label>Battery Level:</label>
+                            <span class="telemetry-value" id="batteryLevel">0%</span>
+                        </div>
+                        
+                        <div class="telemetry">
+                            <label>Current Mode:</label>
+                            <span class="telemetry-value" id="currentMode">Manual</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ros = null;
+        let cmdVelTopic = null;
+        let telemetryTopic = null;
+        let joystick = null;
+        
+        function connectToROS() {
+            ros = new ROSLIB.Ros({
+                url: 'ws://localhost:9090'
+            });
+
+            ros.on('connection', () => {
+                document.getElementById('rosStatus').textContent = 'ROS Bridge Connected';
+                document.getElementById('rosStatus').classList.remove('disconnected');
+                document.getElementById('rosStatus').classList.add('connected');
+                setupTopics();
+            });
+
+            ros.on('error', (error) => {
+                document.getElementById('rosStatus').textContent = 'ROS Bridge Error';
+                document.getElementById('rosStatus').classList.remove('connected');
+                document.getElementById('rosStatus').classList.add('disconnected');
+            });
+
+            ros.on('close', () => {
+                document.getElementById('rosStatus').textContent = 'ROS Bridge Disconnected';
+                document.getElementById('rosStatus').classList.remove('connected');
+                document.getElementById('rosStatus').classList.add('disconnected');
+            });
+        }
+        
+        function setupTopics() {
+            // Command velocity publisher
+            cmdVelTopic = new ROSLIB.Topic({
+                ros: ros,
+                name: '/cmd_vel',
+                messageType: 'geometry_msgs/Twist'
+            });
+            
+            // Telemetry subscriber
+            telemetryTopic = new ROSLIB.Topic({
+                ros: ros,
+                name: '/telemetry',
+                messageType: 'std_msgs/String'
+            });
+            
+            telemetryTopic.subscribe((message) => {
+                updateTelemetry(JSON.parse(message.data));
+            });
+        }
+        
+        function setupJoystick() {
+            const options = {
+                zone: document.getElementById('joystick'),
+                mode: 'static',
+                position: { left: '50%', top: '50%' },
+                color: '#00bcd4',
+                size: 150
+            };
+            
+            joystick = nipplejs.create(options);
+            
+            joystick.on('move', (evt, data) => {
+                if (!ros || !cmdVelTopic) return;
+                
+                const maxSpeed = 1.0;
+                const maxAngular = 1.0;
+                
+                const linear = data.force * maxSpeed;
+                const angular = data.angle.radian * maxAngular;
+                
+                const message = new ROSLIB.Message({
+                    linear: {
+                        x: linear * Math.cos(data.angle.radian),
+                        y: linear * Math.sin(data.angle.radian),
+                        z: 0
+                    },
+                    angular: {
+                        x: 0,
+                        y: 0,
+                        z: angular
+                    }
+                });
+                
+                cmdVelTopic.publish(message);
+            });
+            
+            joystick.on('end', () => {
+                if (!ros || !cmdVelTopic) return;
+                
+                const message = new ROSLIB.Message({
+                    linear: { x: 0, y: 0, z: 0 },
+                    angular: { x: 0, y: 0, z: 0 }
+                });
+                
+                cmdVelTopic.publish(message);
+            });
+        }
+        
+        function updateTelemetry(data) {
+            document.getElementById('linearVelocity').textContent = 
+                `${data.linear_velocity.toFixed(2)} m/s`;
+            document.getElementById('angularVelocity').textContent = 
+                `${data.angular_velocity.toFixed(2)} rad/s`;
+            document.getElementById('batteryLevel').textContent = 
+                `${data.battery_level}%`;
+            document.getElementById('currentMode').textContent = 
+                data.current_mode;
+        }
+        
+        function emergencyStop() {
+            if (!ros || !cmdVelTopic) return;
+            
+            const message = new ROSLIB.Message({
+                linear: { x: 0, y: 0, z: 0 },
+                angular: { x: 0, y: 0, z: 0 }
+            });
+            
+            cmdVelTopic.publish(message);
+            
+            // Additional emergency stop logic can be added here
+        }
+        
+        // Initialize joystick
+        setupJoystick();
+        
+        // Event listeners
+        document.getElementById('connectROS').addEventListener('click', connectToROS);
+        document.getElementById('emergencyStop').addEventListener('click', emergencyStop);
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (ros) {
+                ros.close();
+            }
+            if (joystick) {
+                joystick.destroy();
+            }
+        });
+    </script>
+</body>
+</html> 

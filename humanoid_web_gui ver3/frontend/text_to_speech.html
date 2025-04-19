@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-Speech | Humanoid Robot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <style>
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://ik.imagekit.io/freeflo/production/dd5d55f9-1e87-4442-853d-3c6a6bbb4c67.png?tr=w-3840,q-75&alt=media&pr-true');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        .glass {
+            backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        nav a {
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #00bcd4;
+        }
+        
+        /* Dropdown Menu Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            min-width: 160px;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+            overflow: hidden;
+        }
+        
+        .dropdown-content a {
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-content a:hover {
+            background-color: rgba(0, 188, 212, 0.2);
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* TTS Styles */
+        .tts-textarea {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            width: 100%;
+            min-height: 150px;
+            resize: vertical;
+            outline: none;
+        }
+
+        .tts-textarea:focus {
+            border-color: #00bcd4;
+        }
+
+        .speech-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .speech-item:last-child {
+            border-bottom: none;
+        }
+
+        .speech-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .pulse-animation {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="flex justify-between items-center px-8 py-4 glass sticky top-0 backdrop-blur-md z-10">
+        <h1 class="text-2xl font-bold">Perplex</h1>
+        <div class="space-x-6 text-lg">
+            <a href="dashboard2.html">Dashboard</a>
+            <div class="dropdown inline-block">
+                <a href="javascript:void(0)">Vision</a>
+                <div class="dropdown-content">
+                    <a href="vision_sam.html">SAM</a>
+                    <a href="vision_grasp.html">Grasp</a>
+                    <a href="vision_rviz.html">RViz</a>
+                </div>
+            </div>
+            <div class="dropdown inline-block">
+                <a href="javascript:void(0)">Speech</a>
+                <div class="dropdown-content">
+                    <a href="speech_recognition.html">Speech Recognition</a>
+                    <a href="text_to_speech.html">Text-to-Speech</a>
+                    <a href="speech_chatbot.html">AI Chatbot</a>
+                    <a href="voice_command.html">Voice Commands</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-16">
+        <div class="glass max-w-4xl mx-auto">
+            <h1 class="text-4xl font-bold mb-8 text-center">Text-to-Speech</h1>
+            
+            <div class="mb-8">
+                <p class="text-gray-300 mb-4 text-center">Convert text to speech and customize the robot's voice.</p>
+            </div>
+            
+            <!-- TTS Interface -->
+            <div class="bg-black bg-opacity-50 rounded-xl p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4">Text Input</h2>
+                
+                <!-- Text Input -->
+                <textarea class="tts-textarea mb-4" id="tts-input" placeholder="Enter text to be spoken by the robot..."></textarea>
+                
+                <!-- Quick Phrases -->
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold mb-2">Quick Phrases</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded-lg text-sm quick-phrase">Hello, I am your robot assistant.</button>
+                        <button class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded-lg text-sm quick-phrase">How can I help you today?</button>
+                        <button class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded-lg text-sm quick-phrase">I'm processing your request.</button>
+                        <button class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded-lg text-sm quick-phrase">Task completed successfully.</button>
+                        <button class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded-lg text-sm quick-phrase">I'm sorry, I cannot do that.</button>
+                    </div>
+                </div>
+                
+                <!-- Controls -->
+                <div class="flex justify-center space-x-4">
+                    <button class="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-3 rounded-lg" id="speak-btn">
+                        Speak Text
+                    </button>
+                    <button class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg" id="save-btn">
+                        Save to Library
+                    </button>
+                    <button class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg" id="stop-btn">
+                        Stop Speaking
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Voice Settings -->
+            <div class="bg-black bg-opacity-50 rounded-xl p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4">Voice Settings</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block mb-2">Voice</label>
+                        <select class="w-full bg-gray-800 text-white p-2 rounded-lg" id="voice-select">
+                            <option value="default">Default</option>
+                            <!-- Voice options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Language</label>
+                        <select class="w-full bg-gray-800 text-white p-2 rounded-lg" id="language-select">
+                            <option value="en-US">English (US)</option>
+                            <option value="en-GB">English (UK)</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                            <option value="ja-JP">Japanese</option>
+                            <option value="zh-CN">Chinese (Simplified)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Volume</label>
+                        <input type="range" min="0" max="100" value="80" class="w-full" id="volume-slider">
+                        <div class="flex justify-between text-sm mt-1">
+                            <span>0%</span>
+                            <span>50%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Speed</label>
+                        <input type="range" min="0.5" max="2" value="1" step="0.1" class="w-full" id="speed-slider">
+                        <div class="flex justify-between text-sm mt-1">
+                            <span>Slow</span>
+                            <span>Normal</span>
+                            <span>Fast</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Pitch</label>
+                        <input type="range" min="0.5" max="2" value="1" step="0.1" class="w-full" id="pitch-slider">
+                        <div class="flex justify-between text-sm mt-1">
+                            <span>Low</span>
+                            <span>Normal</span>
+                            <span>High</span>
+                        </div>
+                    </div>
+                    <div class="flex items-end">
+                        <button class="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg w-full" id="test-voice-btn">
+                            Test Current Voice
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Saved Phrases Library -->
+            <div class="bg-black bg-opacity-50 rounded-xl p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4">Saved Phrases</h2>
+                
+                <div class="h-48 overflow-y-auto" id="phrases-library">
+                    <p class="text-gray-400 text-center">No saved phrases yet</p>
+                </div>
+                
+                <div class="mt-4 flex justify-end">
+                    <button class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg" id="clear-library">
+                        Clear Library
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Log Section -->
+            <div class="bg-black bg-opacity-50 rounded-xl p-4 h-48 overflow-y-auto">
+                <h2 class="text-2xl font-semibold mb-2">Logs</h2>
+                <div id="log-container" class="text-sm text-gray-300">
+                    <p>[System] Text-to-Speech module initialized</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-gray-400">
+        © 2025 Humanoid Dashboard. All rights reserved.
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Text-to-Speech page loaded');
+            
+            // DOM Elements
+            const ttsInput = document.getElementById('tts-input');
+            const speakBtn = document.getElementById('speak-btn');
+            const saveBtn = document.getElementById('save-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const voiceSelect = document.getElementById('voice-select');
+            const languageSelect = document.getElementById('language-select');
+            const volumeSlider = document.getElementById('volume-slider');
+            const speedSlider = document.getElementById('speed-slider');
+            const pitchSlider = document.getElementById('pitch-slider');
+            const testVoiceBtn = document.getElementById('test-voice-btn');
+            const phrasesLibrary = document.getElementById('phrases-library');
+            const clearLibraryBtn = document.getElementById('clear-library');
+            const logContainer = document.getElementById('log-container');
+            const quickPhrases = document.querySelectorAll('.quick-phrase');
+            
+            // Add log entry function
+            function addLogEntry(message) {
+                const entry = document.createElement('p');
+                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                logContainer.appendChild(entry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+            
+            // Check if browser supports speech synthesis
+            if (!('speechSynthesis' in window)) {
+                addLogEntry('Text-to-speech not supported in this browser');
+                alert('Text-to-speech is not supported in this browser.');
+                speakBtn.disabled = true;
+                testVoiceBtn.disabled = true;
+                return;
+            }
+            
+            // Populate voice options
+            function populateVoiceList() {
+                const voices = window.speechSynthesis.getVoices();
+                
+                // Clear existing options except default
+                while (voiceSelect.options.length > 1) {
+                    voiceSelect.remove(1);
+                }
+                
+                // Add available voices
+                voices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(option);
+                });
+                
+                addLogEntry(`Loaded ${voices.length} voices`);
+            }
+            
+            // Initialize voice list
+            populateVoiceList();
+            
+            // Chrome loads voices asynchronously
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = populateVoiceList;
+            }
+            
+            // Speak text function
+            function speakText(text) {
+                if (!text) return;
+                
+                // Stop any ongoing speech
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Set voice if not default
+                if (voiceSelect.value !== 'default') {
+                    const voices = window.speechSynthesis.getVoices();
+                    const selectedVoice = voices.find(voice => voice.name === voiceSelect.value);
+                    if (selectedVoice) {
+                        utterance.voice = selectedVoice;
+                    }
+                }
+                
+                // Set other properties
+                utterance.volume = volumeSlider.value / 100;
+                utterance.rate = parseFloat(speedSlider.value);
+                utterance.pitch = parseFloat(pitchSlider.value);
+                utterance.lang = languageSelect.value;
+                
+                // Events
+                utterance.onstart = function() {
+                    addLogEntry(`Speaking: "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`);
+                    speakBtn.innerHTML = '<span class="pulse-animation">Speaking...</span>';
+                    speakBtn.disabled = true;
+                };
+                
+                utterance.onend = function() {
+                    addLogEntry('Speech completed');
+                    speakBtn.textContent = 'Speak Text';
+                    speakBtn.disabled = false;
+                };
+                
+                utterance.onerror = function(event) {
+                    addLogEntry(`Speech error: ${event.error}`);
+                    speakBtn.textContent = 'Speak Text';
+                    speakBtn.disabled = false;
+                };
+                
+                // Speak
+                window.speechSynthesis.speak(utterance);
+            }
+            
+            // Add phrase to library
+            function addToLibrary(text) {
+                // Remove "No saved phrases yet" message if it exists
+                if (phrasesLibrary.querySelector('.text-gray-400')) {
+                    phrasesLibrary.innerHTML = '';
+                }
+                
+                const item = document.createElement('div');
+                item.className = 'speech-item';
+                
+                const textSpan = document.createElement('span');
+                textSpan.className = 'speech-text';
+                textSpan.textContent = text.length > 50 ? text.substring(0, 50) + '...' : text;
+                
+                const controls = document.createElement('div');
+                controls.className = 'speech-controls';
+                
+                const playBtn = document.createElement('button');
+                playBtn.className = 'bg-green-500 hover:bg-green-600 text-white p-1 rounded';
+                playBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>';
+                playBtn.addEventListener('click', () => speakText(text));
+                
+                const editBtn = document.createElement('button');
+                editBtn.className = 'bg-blue-500 hover:bg-blue-600 text-white p-1 rounded';
+                editBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>';
+                editBtn.addEventListener('click', () => {
+                    ttsInput.value = text;
+                    ttsInput.focus();
+                });
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'bg-red-500 hover:bg-red-600 text-white p-1 rounded';
+                deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>';
+                deleteBtn.addEventListener('click', () => {
+                    item.remove();
+                    addLogEntry('Phrase removed from library');
+                    
+                    // If no phrases left, show message
+                    if (phrasesLibrary.children.length === 0) {
+                        phrasesLibrary.innerHTML = '<p class="text-gray-400 text-center">No saved phrases yet</p>';
+                    }
+                });
+                
+                controls.appendChild(playBtn);
+                controls.appendChild(editBtn);
+                controls.appendChild(deleteBtn);
+                
+                item.appendChild(textSpan);
+                item.appendChild(controls);
+                
+                phrasesLibrary.appendChild(item);
+                addLogEntry('Phrase added to library');
+            }
+            
+            // Event Listeners
+            speakBtn.addEventListener('click', function() {
+                const text = ttsInput.value.trim();
+                if (text) {
+                    speakText(text);
+                } else {
+                    addLogEntry('No text to speak');
+                }
+            });
+            
+            saveBtn.addEventListener('click', function() {
+                const text = ttsInput.value.trim();
+                if (text) {
+                    addToLibrary(text);
+                } else {
+                    addLogEntry('No text to save');
+                }
+            });
+            
+            stopBtn.addEventListener('click', function() {
+                window.speechSynthesis.cancel();
+                addLogEntry('Speech stopped');
+                speakBtn.textContent = 'Speak Text';
+                speakBtn.disabled = false;
+            });
+            
+            testVoiceBtn.addEventListener('click', function() {
+                speakText('This is a test of the current voice settings.');
+            });
+            
+            clearLibraryBtn.addEventListener('click', function() {
+                phrasesLibrary.innerHTML = '<p class="text-gray-400 text-center">No saved phrases yet</p>';
+                addLogEntry('Phrase library cleared');
+            });
+            
+            // Quick phrases
+            quickPhrases.forEach(phrase => {
+                phrase.addEventListener('click', function() {
+                    ttsInput.value = this.textContent;
+                    addLogEntry(`Quick phrase selected: "${this.textContent}"`);
+                });
+            });
+            
+            // Settings change handlers
+            languageSelect.addEventListener('change', function() {
+                addLogEntry(`Language changed to ${this.options[this.selectedIndex].text}`);
+            });
+            
+            // Simulate some activity
+            setTimeout(() => addLogEntry('Text-to-speech engine ready'), 1500);
+            setTimeout(() => addLogEntry('Default voice loaded'), 2500);
+        });
+    </script>
+</body>
+
+</html>
