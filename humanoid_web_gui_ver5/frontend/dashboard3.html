@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Humanoid Robot Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <style>
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://ik.imagekit.io/freeflo/production/dd5d55f9-1e87-4442-853d-3c6a6bbb4c67.png?tr=w-3840,q-75&alt=media&pr-true');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .glass {
+            backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        nav a {
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #00bcd4;
+        }
+
+        /* Dropdown Menu Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            min-width: 300px;
+            width: max-content;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .dropdown-content a {
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .dropdown-content a:hover {
+            background-color: rgba(0, 188, 212, 0.2);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Dashboard Layout */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: calc(100vh - 80px);
+            gap: 12px;
+            padding: 12px;
+            height: calc(100vh - 80px);
+            max-height: calc(100vh - 80px);
+            overflow: hidden;
+            margin: 0 auto;
+            max-width: 1400px;
+        }
+
+        .dashboard-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+            max-height: 100%;
+            overflow: hidden;
+        }
+
+        .panel-section {
+            flex: 1;
+            overflow: auto;
+            min-height: 0; /* Important for Firefox */
+        }
+
+        /* Side Navbars */
+        .side-navbar-toggle {
+            position: fixed;
+            top: 90px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 0 8px 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 188, 212, 0.3);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .left-toggle {
+            left: 0;
+        }
+
+        .right-toggle {
+            right: 0;
+            border-radius: 8px 0 0 8px;
+        }
+
+        .side-navbar-toggle:hover {
+            background: rgba(0, 188, 212, 0.3);
+            box-shadow: 0 2px 15px rgba(0, 188, 212, 0.3);
+        }
+
+        .side-navbar-toggle svg {
+            width: 20px;
+            height: 20px;
+            stroke: #00bcd4;
+            transition: all 0.3s ease;
+        }
+
+        .side-navbar-toggle:hover svg {
+            stroke: white;
+        }
+
+        .side-navbar {
+            position: fixed;
+            top: 80px;
+            height: calc(100vh - 80px);
+            width: 60px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 10px;
+            transition: all 0.3s ease;
+            z-index: 90;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .side-navbar.expanded {
+            width: 50vw;
+        }
+
+        .left-navbar {
+            left: 0;
+            border-radius: 0 16px 0 0;
+        }
+
+        .right-navbar {
+            right: 0;
+            border-radius: 16px 0 0 0;
+        }
+
+        .side-navbar-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .side-navbar-item:hover {
+            background: rgba(0, 188, 212, 0.2);
+        }
+
+        .side-navbar-item.active {
+            background: rgba(0, 188, 212, 0.3);
+            border-left: 3px solid #00bcd4;
+        }
+
+        .side-navbar-item i {
+            margin-right: 15px;
+            font-size: 1.2rem;
+            min-width: 28px;
+            text-align: center;
+            color: #00bcd4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .side-navbar-item i svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .navbar-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 10px 0;
+        }
+
+        .navbar-logo svg {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+        }
+
+        .navbar-logo-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00bcd4;
+            letter-spacing: 1px;
+        }
+
+        .side-navbar-content {
+            padding: 15px;
+            display: none;
+        }
+
+        .expanded .side-navbar-content {
+            display: block;
+        }
+
+        .page-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 80;
+            display: none;
+        }
+
+        .page-overlay.active {
+            display: block;
+        }
+
+        /* Responsive Middle Panel */
+        .middle-panel-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+
+        .middle-panel-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .middle-panel-tab:hover {
+            background: rgba(0, 188, 212, 0.1);
+        }
+
+        .middle-panel-tab.active {
+            background: rgba(0, 188, 212, 0.2);
+            border-bottom: 3px solid #00bcd4;
+        }
+
+        /* Camera Feed Styles */
+        .camera-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+        }
+
+        .camera-feed {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .camera-feed video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding: 10px 0;
+        }
+
+        .camera-button {
+            padding: 8px 16px;
+            background: rgba(0, 188, 212, 0.2);
+            border: 1px solid #00bcd4;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .camera-button:hover {
+            background: rgba(0, 188, 212, 0.4);
+        }
+
+        .camera-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .camera-status.connected {
+            color: #4CAF50;
+        }
+
+        .camera-status.disconnected {
+            color: #f44336;
+        }
+
+        /* Feed Type Tabs */
+        .feed-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .feed-tab {
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .feed-tab.active {
+            background: rgba(0, 188, 212, 0.2);
+            border-color: #00bcd4;
+        }
+
+        /* Chat Box Styles */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-break: break-word;
+        }
+
+        .message.user {
+            background: rgba(0, 188, 212, 0.2);
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .message.bot {
+            background: rgba(255, 255, 255, 0.1);
+            align-self: flex-start;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            outline: none;
+        }
+
+        .chat-input input:focus {
+            border-color: #00bcd4;
+        }
+
+        .chat-input button {
+            padding: 10px 20px;
+            background: rgba(0, 188, 212, 0.2);
+            border: 1px solid #00bcd4;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input button:hover {
+            background: rgba(0, 188, 212, 0.4);
+        }
+
+        /* Joint States and End Effector Styles */
+        .data-container {
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .data-section {
+            margin-bottom: 15px;
+        }
+
+        .data-section h3 {
+            margin-bottom: 10px;
+            color: #00bcd4;
+            font-size: 1.2rem;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th, .data-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: normal;
+        }
+
+        .data-value {
+            font-family: monospace;
+            color: #4CAF50;
+        }
+
+        /* Left Panel Styles */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #00bcd4;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #00bcd4;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-indicator.online {
+            background-color: #4CAF50;
+        }
+
+        .status-indicator.offline {
+            background-color: #f44336;
+        }
+
+        .status-indicator.warning {
+            background-color: #FFC107;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .section-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #00bcd4;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-button {
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .action-button:hover {
+            background: rgba(0, 188, 212, 0.2);
+            border-color: #00bcd4;
+        }
+
+        /* Responsive Table Styles */
+        .compact-table {
+            font-size: 0.85rem;
+        }
+
+        .compact-table th, .compact-table td {
+            padding: 4px;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard-container {
+                grid-template-columns: 250px minmax(0, 1fr) 250px;
+            }
+
+            .side-navbar-item {
+                padding: 6px 8px;
+                font-size: 0.9rem;
+            }
+
+            .side-navbar-item i {
+                margin-right: 6px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-container {
+                grid-template-columns: 200px minmax(0, 1fr) 200px;
+                gap: 8px;
+                padding: 8px;
+            }
+
+            .panel-section {
+                padding: 1rem;
+            }
+
+            .section-header h3 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="flex justify-between items-center px-8 py-4 glass sticky top-0 backdrop-blur-md z-10">
+        <h1 class="text-2xl font-bold">Perplex</h1>
+        <div class="space-x-6 text-lg">
+            <a href="#">Dashboard</a>
+            <div class="dropdown inline-block">
+                <a href="javascript:void(0)">Vision</a>
+                <div class="dropdown-content">
+                    <a href="vision_sam.html">SAM Segmentation</a>
+                    <a href="vision_live.html">Live Camera Feed</a>
+                    <a href="vision_grasp.html">Grasping Segmentation</a>
+                    <a href="vision_bounding.html">Bounding Cuboid</a>
+                    <a href="vision_3d.html">3D Scene Reconstruction</a>
+                    <a href="vision_tracking.html">Object Tracking</a>
+                    <a href="vision_depth.html">Depth Estimation</a>
+                    <a href="vision_rviz.html">RViz Visualization</a>
+                </div>
+            </div>
+            <a href="#controls">Controls</a>
+            <a href="#settings">Settings</a>
+        </div>
+    </nav>
+
+    <!-- Page Overlay for Blur Effect -->
+    <div class="page-overlay" id="pageOverlay"></div>
+
+    <!-- Left Side Navbar -->
+    <div class="side-navbar left-navbar" id="leftNavbar">
+        <div class="navbar-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a10 10 0 1 0 0 20 10 10 0 1 0 0-20z"></path>
+                <path d="M12 8v8"></path>
+                <path d="M8 12h8"></path>
+            </svg>
+            <span class="navbar-logo-text">CONTROL</span>
+        </div>
+        <div class="side-navbar-item active" data-section="dashboard">
+            <i>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="9"></rect>
+                    <rect x="14" y="3" width="7" height="5"></rect>
+                    <rect x="14" y="12" width="7" height="9"></rect>
+                    <rect x="3" y="16" width="7" height="5"></rect>
+                </svg>
+            </i>
+            Dashboard
+        </div>
+        <div class="side-navbar-item" data-section="robot-status">
+            <i>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="5" width="16" height="16" rx="2"></rect>
+                    <path d="M9 9h6v6H9z"></path>
+                    <path d="M9 1v4"></path>
+                    <path d="M15 1v4"></path>
+                    <path d="M9 21v2"></path>
+                    <path d="M15 21v2"></path>
+                </svg>
+            </i>
+            System Status
+        </div>
+        <div class="side-navbar-item" data-section="controls">
+            <i>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 8v8"></path>
+                    <path d="M8 12h8"></path>
+                </svg>
+            </i>
+            Controls
+        </div>
+        <div class="side-navbar-item" data-section="vision">
+            <i>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            </i>
+            Vision
+        </div>
+        <div class="side-navbar-item" data-section="settings">
+            <i>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            </i>
+            Settings
+        </div>
+
+        <!-- Left Navbar Content -->
+        <div class="side-navbar-content" id="leftNavbarContent">
+            <!-- Dashboard Content -->
+            <div class="navbar-section" id="dashboard-section">
+                <h2 class="text-xl font-bold mb-4 text-cyan-400">Dashboard</h2>
+                <p class="mb-3">Welcome to the Humanoid Robot Dashboard. Use the navigation to access different features.</p>
+
+                <div class="glass p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-2">Quick Stats</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-black bg-opacity-30 p-3 rounded">
+                            <div class="text-sm text-gray-300">Battery</div>
+                            <div class="text-xl font-bold text-green-400">75%</div>
+                        </div>
+                        <div class="bg-black bg-opacity-30 p-3 rounded">
+                            <div class="text-sm text-gray-300">Temperature</div>
+                            <div class="text-xl font-bold text-yellow-400">42°C</div>
+                        </div>
+                        <div class="bg-black bg-opacity-30 p-3 rounded">
+                            <div class="text-sm text-gray-300">CPU Load</div>
+                            <div class="text-xl font-bold text-blue-400">32%</div>
+                        </div>
+                        <div class="bg-black bg-opacity-30 p-3 rounded">
+                            <div class="text-sm text-gray-300">Memory</div>
+                            <div class="text-xl font-bold text-purple-400">2.4GB</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-4">
+                    <h3 class="text-lg font-semibold mb-2">Recent Activities</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center text-sm">
+                            <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                            <span>System started - 10:23 AM</span>
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+                            <span>Camera calibration completed</span>
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <span class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
+                            <span>Battery level warning</span>
+                        </li>
+                        <li class="flex items-center text-sm">
+                            <span class="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
+                            <span>Software update available</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Robot Status Content -->
+            <div class="navbar-section" id="robot-status-section" style="display: none;">
+                <h2 class="text-xl font-bold mb-4 text-cyan-400">System Status</h2>
+                <p class="mb-3">Monitor the current status of all robot systems.</p>
+
+                <div class="glass p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-2">Connection Status</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center mb-3">
+                            <span class="status-indicator online mr-2"></span>
+                            <span>Robot Connection: Online</span>
+                        </div>
+                        <div class="flex items-center mb-3">
+                            <span class="status-indicator online mr-2"></span>
+                            <span>Camera Connection: Online</span>
+                        </div>
+                        <div class="flex items-center mb-3">
+                            <span class="status-indicator warning mr-2"></span>
+                            <span>Battery: 75%</span>
+                        </div>
+                        <div class="flex items-center mb-3">
+                            <span class="status-indicator online mr-2"></span>
+                            <span>Motors: Operational</span>
+                        </div>
+                        <div class="flex items-center mb-3">
+                            <span class="status-indicator online mr-2"></span>
+                            <span>Sensors: Operational</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-2">System Health</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span>Power System</span>
+                            <div class="w-2/3 bg-gray-700 rounded-full h-2.5">
+                                <div class="bg-green-500 h-2.5 rounded-full" style="width: 95%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Motor Controllers</span>
+                            <div class="w-2/3 bg-gray-700 rounded-full h-2.5">
+                                <div class="bg-green-500 h-2.5 rounded-full" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Sensors</span>
+                            <div class="w-2/3 bg-gray-700 rounded-full h-2.5">
+                                <div class="bg-green-500 h-2.5 rounded-full" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Communication</span>
+                            <div class="w-2/3 bg-gray-700 rounded-full h-2.5">
+                                <div class="bg-yellow-500 h-2.5 rounded-full" style="width: 75%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Vision System</span>
+                            <div class="w-2/3 bg-gray-700 rounded-full h-2.5">
+                                <div class="bg-green-500 h-2.5 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-4">
+                    <h3 class="text-lg font-semibold mb-2">Diagnostics</h3>
+                    <div class="space-y-2">
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50 text-left pl-4">
+                            Run Full Diagnostic
+                        </button>
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50 text-left pl-4">
+                            Check Motor Status
+                        </button>
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50 text-left pl-4">
+                            Sensor Calibration
+                        </button>
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50 text-left pl-4">
+                            Network Test
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Content -->
+            <div class="navbar-section" id="controls-section" style="display: none;">
+                <h2 class="text-xl font-bold mb-4 text-cyan-400">Quick Controls</h2>
+                <p class="mb-3">Control the robot's joints and movements.</p>
+
+                <div class="glass p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-2">Joint Controls</h3>
+                    <div class="space-y-3">
+                        <div class="control-group">
+                            <label>Head Pan</label>
+                            <input type="range" min="0" max="100" value="50" class="slider" id="headPanSide">
+                        </div>
+                        <div class="control-group">
+                            <label>Head Tilt</label>
+                            <input type="range" min="0" max="100" value="50" class="slider" id="headTiltSide">
+                        </div>
+                        <div class="control-group">
+                            <label>Left Arm</label>
+                            <input type="range" min="0" max="100" value="50" class="slider" id="leftArmSide">
+                        </div>
+                        <div class="control-group">
+                            <label>Right Arm</label>
+                            <input type="range" min="0" max="100" value="50" class="slider" id="rightArmSide">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-2">Movement Controls</h3>
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <div></div>
+                        <button class="bg-cyan-800 bg-opacity-30 p-3 rounded hover:bg-opacity-50">↑</button>
+                        <div></div>
+                        <button class="bg-cyan-800 bg-opacity-30 p-3 rounded hover:bg-opacity-50">←</button>
+                        <button class="bg-cyan-800 bg-opacity-30 p-3 rounded hover:bg-opacity-50">●</button>
+                        <button class="bg-cyan-800 bg-opacity-30 p-3 rounded hover:bg-opacity-50">→</button>
+                        <div></div>
+                        <button class="bg-cyan-800 bg-opacity-30 p-3 rounded hover:bg-opacity-50">↓</button>
+                        <div></div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span>Speed</span>
+                            <input type="range" min="0" max="100" value="50" class="slider w-2/3">
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Turn Rate</span>
+                            <input type="range" min="0" max="100" value="30" class="slider w-2/3">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-4">
+                    <h3 class="text-lg font-semibold mb-2">Quick Actions</h3>
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <button class="camera-button">Stand</button>
+                        <button class="camera-button">Sit</button>
+                        <button class="camera-button">Reset Pose</button>
+                        <button class="camera-button">Emergency Stop</button>
+                    </div>
+
+                    <h3 class="text-lg font-semibold mb-2 mt-4">Action Sequences</h3>
+                    <div class="space-y-2">
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50 text-left pl-4">
+                            Wave Hello
+                        </button>
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50 text-left pl-4">
+                            Pick Up Object
+                        </button>
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50 text-left pl-4">
+                            Walk Forward
+                        </button>
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50 text-left pl-4">
+                            Turn Around
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Left Navbar Toggle Button -->
+    <div class="side-navbar-toggle left-toggle" id="leftNavbarToggle">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+    </div>
+
+    <!-- Right Side Navbar -->
+    <div class="side-navbar right-navbar" id="rightNavbar">
+        <div class="navbar-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span class="navbar-logo-text">MONITOR</span>
+        </div>
+        <div class="side-navbar-item active" data-section="joint-states">
+            <i>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
+                    <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
+                    <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
+                    <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
+                    <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
+                    <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
+                </svg>
+            </i>
+            Joint States
+        </div>
+        <div class="side-navbar-item" data-section="end-effector">
+            <i>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4 4 1.8 4 4z"></path>
+                    <path d="M14 12v8"></path>
+                    <path d="M4 16.5C4 14.6 6 13 8.5 13H10"></path>
+                    <path d="M18 16.5c0-1.9-2-3.5-4.5-3.5H10"></path>
+                </svg>
+            </i>
+            End Effector
+        </div>
+        <div class="side-navbar-item" data-section="telemetry">
+            <i>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                    <path d="M2 20h20"></path>
+                </svg>
+            </i>
+            Telemetry
+        </div>
+        <div class="side-navbar-item" data-section="trajectories">
+            <i>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12h4l3-9 4 18 3-9h4"></path>
+                </svg>
+            </i>
+            Trajectories
+        </div>
+        <div class="side-navbar-item" data-section="logs">
+            <i>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 3v4a1 1 0 0 0 1 1h4"></path>
+                    <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <line x1="9" y1="9" x2="10" y2="9"></line>
+                    <line x1="9" y1="13" x2="15" y2="13"></line>
+                    <line x1="9" y1="17" x2="15" y2="17"></line>
+                </svg>
+            </i>
+            Logs
+        </div>
+
+        <!-- Right Navbar Content -->
+        <div class="side-navbar-content" id="rightNavbarContent">
+            <!-- Joint States Content -->
+            <div class="navbar-section" id="joint-states-section">
+                <h2 class="text-xl font-bold mb-4 text-cyan-400">Joint States</h2>
+                <p class="mb-3">View and control the robot's joint positions and velocities.</p>
+
+                <div class="glass p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-2">Joint Groups</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="bg-black bg-opacity-30 p-3 rounded hover:bg-opacity-50">Head</button>
+                        <button class="bg-black bg-opacity-30 p-3 rounded hover:bg-opacity-50">Torso</button>
+                        <button class="bg-black bg-opacity-30 p-3 rounded hover:bg-opacity-50">Left Arm</button>
+                        <button class="bg-black bg-opacity-30 p-3 rounded hover:bg-opacity-50">Right Arm</button>
+                        <button class="bg-black bg-opacity-30 p-3 rounded hover:bg-opacity-50">Left Leg</button>
+                        <button class="bg-black bg-opacity-30 p-3 rounded hover:bg-opacity-50">Right Leg</button>
+                    </div>
+                </div>
+
+                <div class="glass p-4">
+                    <h3 class="text-lg font-semibold mb-2">Joint Presets</h3>
+                    <div class="space-y-2">
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50 text-left pl-4">
+                            Standing Pose
+                        </button>
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50 text-left pl-4">
+                            Walking Ready
+                        </button>
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50 text-left pl-4">
+                            Sitting Pose
+                        </button>
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50 text-left pl-4">
+                            Reaching Forward
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- End Effector Content -->
+            <div class="navbar-section" id="end-effector-section" style="display: none;">
+                <h2 class="text-xl font-bold mb-4 text-cyan-400">End Effector</h2>
+                <p class="mb-3">Control and monitor the robot's end effector positions.</p>
+
+                <div class="glass p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-2">Position Control</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block mb-1">Left Hand X</label>
+                            <div class="flex items-center">
+                                <input type="range" min="0" max="100" value="50" class="slider w-full">
+                                <span class="ml-2 w-12 text-right">0.325</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block mb-1">Left Hand Y</label>
+                            <div class="flex items-center">
+                                <input type="range" min="0" max="100" value="50" class="slider w-full">
+                                <span class="ml-2 w-12 text-right">0.150</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block mb-1">Left Hand Z</label>
+                            <div class="flex items-center">
+                                <input type="range" min="0" max="100" value="50" class="slider w-full">
+                                <span class="ml-2 w-12 text-right">0.720</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-4">
+                    <h3 class="text-lg font-semibold mb-2">Gripper Control</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span>Left Gripper</span>
+                            <div class="flex items-center">
+                                <button class="bg-cyan-800 bg-opacity-30 px-3 py-1 rounded hover:bg-opacity-50 mr-2">Open</button>
+                                <button class="bg-cyan-800 bg-opacity-30 px-3 py-1 rounded hover:bg-opacity-50">Close</button>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Right Gripper</span>
+                            <div class="flex items-center">
+                                <button class="bg-cyan-800 bg-opacity-30 px-3 py-1 rounded hover:bg-opacity-50 mr-2">Open</button>
+                                <button class="bg-cyan-800 bg-opacity-30 px-3 py-1 rounded hover:bg-opacity-50">Close</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block mb-1">Grip Force</label>
+                            <input type="range" min="0" max="100" value="50" class="slider w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telemetry Content -->
+            <div class="navbar-section" id="telemetry-section" style="display: none;">
+                <h2 class="text-xl font-bold mb-4 text-cyan-400">Telemetry</h2>
+                <p class="mb-3">Real-time sensor data and telemetry information.</p>
+
+                <div class="glass p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-2">IMU Data</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span>Roll</span>
+                            <span class="font-mono">0.02 rad</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Pitch</span>
+                            <span class="font-mono">0.15 rad</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Yaw</span>
+                            <span class="font-mono">1.57 rad</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Accel X</span>
+                            <span class="font-mono">0.01 m/s²</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Accel Y</span>
+                            <span class="font-mono">0.02 m/s²</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Accel Z</span>
+                            <span class="font-mono">9.81 m/s²</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-4">
+                    <h3 class="text-lg font-semibold mb-2">Force Sensors</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span>Left Foot</span>
+                            <span class="font-mono">245.3 N</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Right Foot</span>
+                            <span class="font-mono">252.1 N</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Left Hand</span>
+                            <span class="font-mono">0.0 N</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Right Hand</span>
+                            <span class="font-mono">0.0 N</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button class="w-full bg-cyan-800 bg-opacity-30 p-2 rounded hover:bg-opacity-50">
+                            Export Telemetry Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Navbar Toggle Button -->
+    <div class="side-navbar-toggle right-toggle" id="rightNavbarToggle">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Middle Panel (Full Width) -->
+        <div class="dashboard-panel" style="grid-column: 1 / -1;">
+            <!-- Middle Panel Tabs -->
+            <div class="middle-panel-tabs">
+                <div class="middle-panel-tab active" id="cameraTab">Camera Feed</div>
+                <div class="middle-panel-tab" id="chatTab">Chat Interface</div>
+            </div>
+
+            <!-- Middle Upper Panel - Live Feed -->
+            <div class="glass panel-section" id="cameraPanel">
+                <div class="section-header">
+                    <h3>Live Camera Feed</h3>
+                    <div class="section-actions">
+                        <button class="action-button" id="fullscreenBtn">Fullscreen</button>
+                        <button class="action-button" id="recordBtn">Record</button>
+                    </div>
+                </div>
+                <div class="camera-container">
+                    <div class="feed-tabs">
+                        <button class="feed-tab active" id="rgbFeed">RGB</button>
+                        <button class="feed-tab" id="depthFeed">Depth</button>
+                        <button class="feed-tab" id="thermalFeed">Thermal</button>
+                    </div>
+                    <div class="camera-feed">
+                        <video id="cameraStream" autoplay playsinline></video>
+                        <div class="camera-status disconnected" id="cameraStatus">Camera Disconnected</div>
+                    </div>
+                    <div class="camera-controls">
+                        <button class="camera-button" id="startCamera">Start Camera</button>
+                        <button class="camera-button" id="stopCamera">Stop Camera</button>
+                        <button class="camera-button" id="takeSnapshot">Take Snapshot</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Lower Panel - Chat Box -->
+            <div class="glass panel-section" id="chatPanel">
+                <div class="section-header">
+                    <h3>Chat Interface</h3>
+                    <div class="section-actions">
+                        <button class="action-button" id="clearChat">Clear</button>
+                        <button class="action-button" id="saveChat">Save</button>
+                    </div>
+                </div>
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot">
+                            Hello! I'm your robot assistant. How can I help you today?
+                        </div>
+                        <div class="message user">
+                            Can you show me the current joint positions?
+                        </div>
+                        <div class="message bot">
+                            Sure! I've displayed the current joint states in the right panel.
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="chatInput" placeholder="Type your message here...">
+                        <button id="sendMessage">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-2 text-gray-400">
+        © 2023 Humanoid Dashboard by Mayank Dahotre. All rights reserved.
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Camera elements
+            const video = document.getElementById('cameraStream');
+            const startButton = document.getElementById('startCamera');
+            const stopButton = document.getElementById('stopCamera');
+            const snapshotButton = document.getElementById('takeSnapshot');
+            const statusIndicator = document.getElementById('cameraStatus');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const recordBtn = document.getElementById('recordBtn');
+            let stream = null;
+            let mediaRecorder = null;
+            let recordedChunks = [];
+
+            // Feed type tabs
+            const rgbFeedTab = document.getElementById('rgbFeed');
+            const depthFeedTab = document.getElementById('depthFeed');
+            const thermalFeedTab = document.getElementById('thermalFeed');
+
+            // Chat elements
+            const chatMessages = document.getElementById('chatMessages');
+            const chatInput = document.getElementById('chatInput');
+            const sendMessageBtn = document.getElementById('sendMessage');
+            const clearChatBtn = document.getElementById('clearChat');
+            const saveChatBtn = document.getElementById('saveChat');
+
+            // Middle panel tabs
+            const cameraTab = document.getElementById('cameraTab');
+            const chatTab = document.getElementById('chatTab');
+            const cameraPanel = document.getElementById('cameraPanel');
+            const chatPanel = document.getElementById('chatPanel');
+
+            // Side navbar items
+            const sideNavItems = document.querySelectorAll('.side-navbar-item');
+
+            // Initialize panels
+            chatPanel.style.display = 'none';
+
+            // Middle panel tab switching
+            cameraTab.addEventListener('click', () => {
+                setActiveMiddleTab(cameraTab);
+                cameraPanel.style.display = 'block';
+                chatPanel.style.display = 'none';
+            });
+
+            chatTab.addEventListener('click', () => {
+                setActiveMiddleTab(chatTab);
+                cameraPanel.style.display = 'none';
+                chatPanel.style.display = 'block';
+            });
+
+            function setActiveMiddleTab(activeTab) {
+                // Remove active class from all tabs
+                [cameraTab, chatTab].forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                // Add active class to clicked tab
+                activeTab.classList.add('active');
+            }
+
+            // Side navbar toggle functionality
+            const leftNavbarToggle = document.getElementById('leftNavbarToggle');
+            const rightNavbarToggle = document.getElementById('rightNavbarToggle');
+            const leftNavbar = document.getElementById('leftNavbar');
+            const rightNavbar = document.getElementById('rightNavbar');
+            const pageOverlay = document.getElementById('pageOverlay');
+
+            // Left navbar toggle
+            leftNavbarToggle.addEventListener('click', () => {
+                leftNavbar.classList.toggle('expanded');
+                if (leftNavbar.classList.contains('expanded')) {
+                    pageOverlay.classList.add('active');
+                    // Close right navbar if open
+                    rightNavbar.classList.remove('expanded');
+                } else if (!rightNavbar.classList.contains('expanded')) {
+                    pageOverlay.classList.remove('active');
+                }
+            });
+
+            // Right navbar toggle
+            rightNavbarToggle.addEventListener('click', () => {
+                rightNavbar.classList.toggle('expanded');
+                if (rightNavbar.classList.contains('expanded')) {
+                    pageOverlay.classList.add('active');
+                    // Close left navbar if open
+                    leftNavbar.classList.remove('expanded');
+                } else if (!leftNavbar.classList.contains('expanded')) {
+                    pageOverlay.classList.remove('active');
+                }
+            });
+
+            // Close navbars when clicking on overlay
+            pageOverlay.addEventListener('click', () => {
+                leftNavbar.classList.remove('expanded');
+                rightNavbar.classList.remove('expanded');
+                pageOverlay.classList.remove('active');
+            });
+
+            // Side navbar item functionality
+            sideNavItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    // Find parent navbar
+                    const parentNavbar = item.closest('.side-navbar');
+                    // Remove active class from all items in this navbar
+                    parentNavbar.querySelectorAll('.side-navbar-item').forEach(navItem => {
+                        navItem.classList.remove('active');
+                    });
+                    // Add active class to clicked item
+                    item.classList.add('active');
+
+                    // Show corresponding section content if in expanded mode
+                    if (parentNavbar.classList.contains('expanded')) {
+                        const sectionName = item.getAttribute('data-section');
+                        if (sectionName) {
+                            // Hide all sections first
+                            parentNavbar.querySelectorAll('.navbar-section').forEach(section => {
+                                section.style.display = 'none';
+                            });
+
+                            // Show the selected section
+                            const selectedSection = document.getElementById(`${sectionName}-section`);
+                            if (selectedSection) {
+                                selectedSection.style.display = 'block';
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Sync sliders between side navbar and main content
+            const headPanSide = document.getElementById('headPanSide');
+            const headTiltSide = document.getElementById('headTiltSide');
+            const leftArmSide = document.getElementById('leftArmSide');
+            const rightArmSide = document.getElementById('rightArmSide');
+
+            // Sync sliders if they exist
+            if (headPanSide && headPan) {
+                headPanSide.addEventListener('input', () => {
+                    headPan.value = headPanSide.value;
+                });
+                headPan.addEventListener('input', () => {
+                    headPanSide.value = headPan.value;
+                });
+            }
+
+            if (headTiltSide && headTilt) {
+                headTiltSide.addEventListener('input', () => {
+                    headTilt.value = headTiltSide.value;
+                });
+                headTilt.addEventListener('input', () => {
+                    headTiltSide.value = headTilt.value;
+                });
+            }
+
+            if (leftArmSide && leftArm) {
+                leftArmSide.addEventListener('input', () => {
+                    leftArm.value = leftArmSide.value;
+                });
+                leftArm.addEventListener('input', () => {
+                    leftArmSide.value = leftArm.value;
+                });
+            }
+
+            if (rightArmSide && rightArm) {
+                rightArmSide.addEventListener('input', () => {
+                    rightArm.value = rightArmSide.value;
+                });
+                rightArm.addEventListener('input', () => {
+                    rightArmSide.value = rightArm.value;
+                });
+            }
+
+            // Start camera
+            startButton.addEventListener('click', async () => {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.srcObject = stream;
+                    statusIndicator.textContent = 'Camera Connected';
+                    statusIndicator.classList.remove('disconnected');
+                    statusIndicator.classList.add('connected');
+                } catch (err) {
+                    console.error('Error accessing camera:', err);
+                    statusIndicator.textContent = 'Camera Access Denied';
+                }
+            });
+
+            // Stop camera
+            stopButton.addEventListener('click', () => {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    video.srcObject = null;
+                    statusIndicator.textContent = 'Camera Disconnected';
+                    statusIndicator.classList.remove('connected');
+                    statusIndicator.classList.add('disconnected');
+                }
+            });
+
+            // Take snapshot
+            snapshotButton.addEventListener('click', () => {
+                if (video.srcObject) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0);
+
+                    // Create download link
+                    const link = document.createElement('a');
+                    link.download = 'snapshot.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                }
+            });
+
+            // Fullscreen button
+            fullscreenBtn.addEventListener('click', () => {
+                const cameraFeed = document.querySelector('.camera-feed');
+                if (cameraFeed.requestFullscreen) {
+                    cameraFeed.requestFullscreen();
+                } else if (cameraFeed.webkitRequestFullscreen) {
+                    cameraFeed.webkitRequestFullscreen();
+                } else if (cameraFeed.msRequestFullscreen) {
+                    cameraFeed.msRequestFullscreen();
+                }
+            });
+
+            // Record video
+            recordBtn.addEventListener('click', () => {
+                if (!stream) {
+                    alert('Please start the camera first');
+                    return;
+                }
+
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                    recordBtn.textContent = 'Record';
+                    return;
+                }
+
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) {
+                        recordedChunks.push(e.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'recorded-video.webm';
+                    link.click();
+                };
+
+                mediaRecorder.start();
+                recordBtn.textContent = 'Stop Recording';
+            });
+
+            // Feed type tabs
+            rgbFeedTab.addEventListener('click', () => {
+                setActiveFeedTab(rgbFeedTab);
+                // Here you would switch to RGB feed
+                video.style.filter = 'none';
+            });
+
+            depthFeedTab.addEventListener('click', () => {
+                setActiveFeedTab(depthFeedTab);
+                // Simulate depth view with a blue filter
+                video.style.filter = 'hue-rotate(240deg) saturate(2)';
+            });
+
+            thermalFeedTab.addEventListener('click', () => {
+                setActiveFeedTab(thermalFeedTab);
+                // Simulate thermal view with a red/orange filter
+                video.style.filter = 'hue-rotate(30deg) saturate(3) contrast(1.5)';
+            });
+
+            function setActiveFeedTab(activeTab) {
+                // Remove active class from all tabs
+                [rgbFeedTab, depthFeedTab, thermalFeedTab].forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                // Add active class to clicked tab
+                activeTab.classList.add('active');
+            }
+
+            // Chat functionality
+            sendMessageBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                const message = chatInput.value.trim();
+                if (message) {
+                    // Add user message
+                    addMessage(message, 'user');
+                    chatInput.value = '';
+
+                    // Simulate bot response after a short delay
+                    setTimeout(() => {
+                        const responses = [
+                            "I'm processing your request.",
+                            "Let me check the robot's status for you.",
+                            "I've updated the joint positions display.",
+                            "The camera feed has been switched to the requested mode.",
+                            "Is there anything else you'd like to know?"
+                        ];
+                        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                        addMessage(randomResponse, 'bot');
+                    }, 1000);
+                }
+            }
+
+            function addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', sender);
+                messageDiv.textContent = text;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Clear chat
+            clearChatBtn.addEventListener('click', () => {
+                chatMessages.innerHTML = '';
+                // Add initial bot message
+                addMessage("Hello! I'm your robot assistant. How can I help you today?", 'bot');
+            });
+
+            // Save chat
+            saveChatBtn.addEventListener('click', () => {
+                const messages = Array.from(chatMessages.children).map(msg => {
+                    const sender = msg.classList.contains('user') ? 'User' : 'Bot';
+                    return `${sender}: ${msg.textContent}`;
+                }).join('\n');
+
+                const blob = new Blob([messages], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'chat-log.txt';
+                link.click();
+            });
+
+            // Refresh system status
+            document.getElementById('refreshStatus').addEventListener('click', () => {
+                // Simulate refreshing status with random changes
+                const statusItems = document.querySelectorAll('.status-indicator');
+                const statusTypes = ['online', 'warning', 'offline'];
+
+                statusItems.forEach(item => {
+                    // 80% chance to stay the same, 20% chance to change
+                    if (Math.random() > 0.8) {
+                        // Remove all status classes
+                        statusTypes.forEach(type => item.classList.remove(type));
+                        // Add a random status class
+                        const newStatus = statusTypes[Math.floor(Math.random() * statusTypes.length)];
+                        item.classList.add(newStatus);
+
+                        // Update the text if needed
+                        const statusText = item.nextElementSibling;
+                        if (statusText) {
+                            const textParts = statusText.textContent.split(':');
+                            if (textParts.length > 1) {
+                                const statusName = textParts[0];
+                                let statusValue = 'Online';
+
+                                if (newStatus === 'warning') statusValue = 'Warning';
+                                if (newStatus === 'offline') statusValue = 'Offline';
+
+                                statusText.textContent = `${statusName}: ${statusValue}`;
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Refresh joint states and end effector position
+            document.getElementById('refreshJoints').addEventListener('click', () => {
+                // Simulate refreshing data with slight changes
+                const dataValues = document.querySelectorAll('.data-value');
+                dataValues.forEach(value => {
+                    if (value.textContent.includes('rad')) {
+                        const currentValue = parseFloat(value.textContent);
+                        const newValue = (currentValue + (Math.random() * 0.1 - 0.05)).toFixed(2);
+                        value.textContent = `${newValue} rad`;
+                    }
+                });
+            });
+
+            document.getElementById('refreshEE').addEventListener('click', () => {
+                // Simulate refreshing end effector data
+                const eeValues = document.querySelectorAll('.data-value');
+                eeValues.forEach(value => {
+                    if (value.textContent.includes('m')) {
+                        const currentValue = parseFloat(value.textContent);
+                        const newValue = (currentValue + (Math.random() * 0.02 - 0.01)).toFixed(3);
+                        value.textContent = `${newValue} m`;
+                    }
+                });
+            });
+
+            // Export joint data
+            document.getElementById('exportJoints').addEventListener('click', () => {
+                const jointData = {};
+                const sections = document.querySelectorAll('.data-section');
+
+                sections.forEach(section => {
+                    const title = section.querySelector('h3').textContent;
+                    const rows = section.querySelectorAll('tr');
+
+                    if (rows.length > 1) {
+                        jointData[title] = {};
+
+                        for (let i = 1; i < rows.length; i++) {
+                            const cells = rows[i].querySelectorAll('td');
+                            if (cells.length >= 2) {
+                                const jointName = cells[0].textContent;
+                                const position = cells[1].textContent;
+                                jointData[title][jointName] = position;
+                            }
+                        }
+                    }
+                });
+
+                const jsonData = JSON.stringify(jointData, null, 2);
+                const blob = new Blob([jsonData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'joint-data.json';
+                link.click();
+            });
+
+            // Make sure tables don't overflow on small screens
+            function adjustTableResponsiveness() {
+                const tables = document.querySelectorAll('.data-table');
+                const windowWidth = window.innerWidth;
+
+                tables.forEach(table => {
+                    if (windowWidth < 1200) {
+                        table.classList.add('compact-table');
+                    } else {
+                        table.classList.remove('compact-table');
+                    }
+                });
+            }
+
+            // Call once on load and add resize listener
+            adjustTableResponsiveness();
+            window.addEventListener('resize', adjustTableResponsiveness);
+        });
+    </script>
+</body>
+
+</html>
